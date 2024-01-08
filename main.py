@@ -284,7 +284,7 @@ if __name__ == "__main__":
     list_title = checked_list['list_title']
     list_owner = checked_list['list_owner']
     list_domain_name = get_list_domain_name(list_url)
-    list_movie_count = get_movie_count_from_meta_description(list_dom),
+    list_movie_count = get_movie_count_from_meta_description(list_dom)
 
     list_detail_url = f'{list_url}detail/'
     list_detail_page_url = f'{list_detail_url}page/'
