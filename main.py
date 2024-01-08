@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup as TagSoup
 import streamlit as st
 import pandas as pd
 import requests
+import validators
 from paths import paths
 import time
 
@@ -38,14 +39,6 @@ def get_dom_from_url(_url) -> TagSoup:
     except Exception as e:
         #> If an error occurs while obtaining the DOM...
         print(f'Connection to the address failed [{_url}] Error: {e}')
-
-def get_body_content(_dom, _obj) -> str:
-    """
-    a function that returns the content of the body tag..
-    """
-    #> get the content of the body tag.
-    bodyContent = _dom.find('body').attrs[_obj]
-    return bodyContent
 
 def get_list_domain_name(_url) -> str:
     return _url[_url.index('/list/')+len('/list/'):].replace('/','')
@@ -170,55 +163,114 @@ def get_movies_from_url(_list_detail_page_url, _last_page_no) -> list:
     my_bar.empty()
     return movies
 
-def user_list_check(_dom, _url) -> tuple:
-    try:
-        if check_page_is_list(_dom):
-            list_url = get_list_url(_dom)
-            list_title = get_list_title(_dom)
-            list_owner = get_list_owner(_dom)
+class Checker:
 
-            if not check_url_match(_url, list_url):
+    def __init__(self, dom):
+        self.dom = dom
+        self.dom_parser = DomParser(dom)
+
+    def check_page_is_list(self) -> bool:
+        """
+        this function checks dom's meta tag,
+        og:type is letterboxd:list or not,
+        and returns bool value as result.
+        """
+
+        meta_content = self.dom_parser.get_meta_content('og:type')
+
+        context = {
+            'is_list': meta_content == 'letterboxd:list',
+            'meta_content': meta_content
+            }
+        return context
+    
+    def user_list_check(self, url) -> dict:
+        try:
+            current_list = ListPage(self.dom)
+            list_url = current_list.get_list_url()
+            list_title = current_list.get_list_title()
+            list_owner = current_list.get_list_owner()
+
+            if not check_url_match(url, list_url):
                 # is redirected
                 print(f'Redirected to {list_url}')
 
-        context = {
-            'list_url': list_url,
-            'list_title': list_title,
-            'list_owner': list_owner,
-            'list_avaliable': True,
-        }
-    except Exception as e:
-        print(f'An error occurred while checking the list. Error: {e}')
-        context = {
-            'list_avaliable': False
-        }
-    finally:
-        return context
+            context = {
+                'list_url': list_url,
+                'list_title': list_title,
+                'list_owner': list_owner,
+                'list_avaliable': True,
+            }
+        except Exception as e:
+            print(f'An error occurred while checking the list. Error: {e}')
+            context = {
+                'list_avaliable': False
+            }
+        finally:
+            return context
 
-def get_meta_content(_dom, _obj) -> str:
-    """
-    a function that returns the content of the meta tag..
-    """
-    try:
-        #> get the content of the meta tag.
-        metaContent = _dom.find('meta', property=_obj).attrs['content']
-    except AttributeError:
-        #> if the meta tag is not found, return an empty string.
-        print(f"Cannot retrieve '{_obj}' from the meta tag. Error Message: {AttributeError}")
-        metaContent = ''
-    return metaContent
+class DomParser:
+    
+        def __init__(self, dom):
+            self.dom = dom
+    
+        def get_meta_content(self, _obj) -> str:
+            """
+            a function that returns the content of the meta tag..
+            """
+            try:
+                #> get the content of the meta tag.
+                metaContent = self.dom.find('meta', property=_obj).attrs['content']
+            except AttributeError:
+                #> if the meta tag is not found, return an empty string.
+                print(f"Cannot retrieve '{_obj}' from the meta tag. Error Message: {AttributeError}")
+                metaContent = None
+            return metaContent
+    
+        def get_body_content(self, _obj) -> str:
+            """
+            a function that returns the content of the body tag..
+            """
+            #> get the content of the body tag.
+            bodyContent = self.dom.find('body').attrs[_obj]
+            return bodyContent
+    
+        def get_list_domain_name(self) -> str:
+            list_domain_name = get_list_domain_name(self.dom)
+            return list_domain_name
+    
+        def get_list_last_page(self, detail_url) -> int:
+            last_page_no = get_list_last_page(self.dom, detail_url)
+            return last_page_no
+    
+        def get_movie_count_from_meta_description(self) -> int:
+            movie_count = get_movie_count_from_meta_description(self.dom)
+            return movie_count
+    
+        def get_movie_count_from_list_last_page(self, last_page_no, detail_url) -> int:
+            movie_count = get_movie_count_from_list_last_page(last_page_no, detail_url)
+            return movie_count
+    
+        def get_movies_from_url(self, list_detail_page_url, last_page_no) -> list:
+            movies = get_movies_from_url(list_detail_page_url, last_page_no)
+            return movies
 
-def get_list_url(list_dom) -> str:
-    list_url = get_meta_content(list_dom, 'og:url')
-    return list_url
+class ListPage:
 
-def get_list_title(list_dom) -> str:
-    list_title = get_meta_content(list_dom, 'og:title')
-    return list_title
+    def __init__(self, dom):
+        self.dom_parser = DomParser(dom)
 
-def get_list_owner(list_dom) -> str:
-    list_owner = get_body_content(list_dom, 'data-owner')
-    return list_owner
+    def get_list_url(self) -> str:
+        list_url = self.dom_parser.get_meta_content('og:url')
+        return list_url
+
+    def get_list_title(self) -> str:
+        list_title = self.dom_parser.get_meta_content('og:title')
+        return list_title
+
+    def get_list_owner(self) -> str:
+        list_owner = self.dom_parser.get_body_content('data-owner')
+        return list_owner
 
 # -- EDITOR FUNCTIONS --
 
@@ -236,93 +288,145 @@ def check_url_match(url_1, url_2) -> bool:
         return True
     return False
 
-def check_page_is_list(_dom) -> bool:
-    meta_content = get_meta_content(_dom,'og:type') 
 
-    if meta_content == "letterboxd:list":
-        print('Meta content confirmed that the entered address is a list.')
-        print(f'Meta content: {meta_content}')
-        return True
-    else:
-        print('This page not a list.')
-        return False
+def check_url_pattern(url) -> bool:
+    # this function will be improved.
 
-def check_url_is_list(url) -> bool:
     site_url = 'https://letterboxd.com/'
-    required_list = [site_url, '/list/']
+    required_path = '/list/'
 
-    if all(x in url for x in required_list):
-        print(f'URL: {url} is a list.')
+    if all(x in url for x in [site_url, required_path]):
         return True
     else:
-        st.error(f'URL: {url} is not a list.')
-        print(f'URL: {url} is not a list.')
         return False
     
 def check_string_is_url(url) -> bool:
-    try:
-        requests.get(url)
-        print(f'URL: {url} is a valid url.')
-        return True
-    except:
-        st.error(f'URL: {url} is not a valid url.')
-        print(f'URL: {url} is not a valid url.')
-        return False
+    return validators.url(url)
+
+def set_page_style():
+    st.markdown(
+        """
+        <style>
+            .stApp {
+                background-image: linear-gradient(180deg, #20272e, 14%, #14181c, #14181c, #14181c);
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+def init_page_config():
+    st.set_page_config(
+        page_title='Letterboxd List Downloader',
+        page_icon='🎬',
+        menu_items={
+            'Get Help': 'https://github.com/FastFingertips/streamlit-letterboxd-downloader',
+            'Report a bug': 'https://github.com/FastFingertips/streamlit-letterboxd-downloader/issues',
+            'About': 'This project is designed to download lists from Letterboxd. The developer behind it is [@FastFingertips](https://github.com/FastFingertips).'
+        }
+    )
 
 if __name__ == "__main__":
-  st.title('Letterboxd List Downloader')
-  url = st.text_input('Enter a list url')
-  if url and check_string_is_url(url) and check_url_is_list(url):
-    get_again = st.button('Get Again')
+    # Page Config
+    init_page_config()
 
-    list_dom = get_dom_from_url(url)
+    # Page Style
+    set_page_style()
 
-    checked_list = user_list_check(list_dom, url)
-    list_avaliable = checked_list['list_avaliable']
+    st.title('Letterboxd List Downloader')
+    url_params = st.experimental_get_query_params()
 
-    list_url = checked_list['list_url']
-    list_title = checked_list['list_title']
-    list_owner = checked_list['list_owner']
-    list_domain_name = get_list_domain_name(list_url)
-    list_movie_count = get_movie_count_from_meta_description(list_dom)
-
-    list_detail_url = f'{list_url}detail/'
-    list_detail_page_url = f'{list_detail_url}page/'
-    
-    list_detail_dom = get_dom_from_url(list_detail_url)
-    last_page_no = get_list_last_page(list_detail_dom, list_detail_page_url)
-
-    list_info_dict = {
-        'list_url': list_url,
-        'list_title': list_title,
-        'list_owner': list_owner,
-        'list_domain_name': list_domain_name,
-        'last_page_no': last_page_no,
-        'movies_count': list_movie_count
-    }
-
-    list_info = st.write(list_info_dict)
-
-    # long process
-    movies = get_movies_from_url(list_detail_page_url, last_page_no)
-
-    if list_avaliable:
-        # movies
-        st.dataframe(pd.DataFrame(movies, columns=['rank', 'year', 'name', 'link']))
-        csv_syntax = get_csv_syntax(movies)
-
-        # download
-        download_button = st.download_button(
-            label="Download CSV",
-            data=csv_syntax,
-            file_name=f'{list_domain_name}.csv',
-            mime='text/csv'
-        )
-
-        if download_button:
-            st.success(f'{list_domain_name}.csv downloaded.')
+    if url_params and 'q' in url_params:
+        # print('URL Params Found')
+        user_input = url_params['q'][0]
+        user_input = st.text_input('Enter a list url or username/list-title', value=user_input)
     else:
-        st.write('List is not avaliable.')
-  else:
-    st.write('Awaiting for URL to be entered.')
+        # print('URL Params Not Found')
+        user_input = st.text_input('Enter a list url or username/list-title')
 
+    if user_input.strip():
+        input_is_url = check_string_is_url(user_input)
+
+        # check if user_input is url
+        if not input_is_url:
+            # check if user_input is username/list-title
+            if '/' in user_input:
+                # use list if user input is username/list-title
+                username, list_title = user_input.split('/', 1) # maxsplit=1
+                # check if username and list_title is not empty
+                if all([username, list_title]):
+                    user_input = f'https://letterboxd.com/{username}/list/{list_title}/'
+
+        # check if pattern is valid
+        if check_url_pattern(user_input):
+            url = user_input
+            get_again = st.button('Get Again')
+
+            list_dom = get_dom_from_url(url)
+
+            # create checker object for  page
+            checker = Checker(list_dom)
+
+            list_meta_verify = checker.check_page_is_list()
+            st.write(list_meta_verify['meta_content'], list_meta_verify['is_list'])
+
+
+            if list_dom.find('body', class_='error'):
+                err_msg = list_dom.find('section', class_='message').p.get_text()
+                err_msg = err_msg.split('\n')
+                err_msg = err_msg[0].strip()
+                st.error(f'{err_msg}', icon='👀')
+            else:
+                checked_list = checker.user_list_check(url)
+                list_avaliable = checked_list['list_avaliable']
+
+                list_url = checked_list['list_url']
+                list_title = checked_list['list_title']
+                list_owner = checked_list['list_owner']
+                list_domain_name = get_list_domain_name(list_url)
+                list_movie_count = get_movie_count_from_meta_description(list_dom)
+
+                list_detail_url = f'{list_url}detail/'
+                list_detail_page_url = f'{list_detail_url}page/'
+                
+                list_detail_dom = get_dom_from_url(list_detail_url)
+                last_page_no = get_list_last_page(list_detail_dom, list_detail_page_url)
+
+                list_info_dict = {
+                    'list_url': list_url,
+                    'list_title': list_title,
+                    'list_owner': list_owner,
+                    'list_domain_name': list_domain_name,
+                    'last_page_no': last_page_no,
+                    'movies_count': list_movie_count
+                }
+
+                # render list info
+                st.write(list_info_dict)
+
+                # long process
+                movies = get_movies_from_url(list_detail_page_url, last_page_no)
+
+                if list_avaliable:
+                    st.dataframe(
+                        pd.DataFrame(
+                            movies,
+                            columns=["rank", "year", "name", "link"]
+                        ),
+                        hide_index=True,
+                        use_container_width=True,
+                    )
+
+                    csv_syntax = get_csv_syntax(movies)
+
+                    # download
+                    download_button = st.download_button(
+                        label="Download CSV",
+                        data=csv_syntax,
+                        file_name=f'{list_domain_name}.csv',
+                        mime='text/csv'
+                    )
+
+                    if download_button: st.success(f'{list_domain_name}.csv downloaded.')
+        else: pass
+    else: st.write('Awaiting input..')
