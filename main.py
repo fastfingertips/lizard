@@ -179,7 +179,6 @@ class MovieList(Url):
                 return self._short_url
 
         @property
-        @st.cache_data
         def movies(_self):
             """
             this function checks movies is avaliable or not,
