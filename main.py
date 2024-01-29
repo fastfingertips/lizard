@@ -498,6 +498,33 @@ class Page:
             text = self.config['page_config']['page_title']
         st.title(text)
 
+    def create_footer(self):
+        st.markdown(
+            """
+            <style>
+                .footer {
+                    position: fixed;
+                    left: 0;
+                    bottom: 0;
+                    width: 100%;
+                    margin-bottom: 1em;
+                    background-color: transparent;
+                    color: white;
+                    text-align: center;
+                }
+                .footer a {text-decoration: none; margin-left: 0.5em; margin-right: 0.5em;}
+                .foooter img {vertical-align: middle;}
+            </style>
+            <div class="footer">
+                <a href="https://github.com/FastFingertips/letterboxd-downloader-web" target="_blank" rel="noopener noreferrer">
+                    <img src="https://img.shields.io/github/last-commit/fastfingertips/letterboxd-downloader-web?style=flat&&label=last%20update&labelColor=%2314181C&color=%2320272E">
+                </a>
+                <img src="https://visitor-badge.laobi.icu/badge?page_id=FastFingertips.letterboxd-downloader-web&left_color=%2314181C&right_color=%2320272E"/>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
 def get_dom_from_url(_url) -> TagSoup:
     """
     Reads and retrieves the DOM of the specified page URL.
@@ -545,6 +572,7 @@ if __name__ == "__main__":
     # Render
     page = Page()
     page.create_title()
+    page.create_footer()
 
     # Input
     input_manager = InputManager()
