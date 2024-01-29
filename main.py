@@ -211,7 +211,17 @@ class UrlManager:
         return False
 
     @staticmethod
-    def check_string_is_url(url) -> bool:
+    def is_short_url(url) -> bool:
+        """
+        this function checks if the URL is a short URL or not,
+        and returns a boolean value as the result.
+        """
+        short_domain = 'boxd.it'
+        protocols = ['http://', 'https://']
+        return any(prot+short_domain in url for prot in protocols)
+
+    @staticmethod
+    def is_url(url) -> bool:
         """
         this function checks if the URL is valid or not,
         and returns a boolean value as the result.
@@ -225,8 +235,8 @@ class UrlManager:
         and returns a boolean value as the result.
         """
 
-        matches = ['://letterboxd', '://boxd.it']
-        protocols = ['http', 'https']
+        matches = ['letterboxd.com/', 'boxd.it/']
+        protocols = ['http://', 'https://']
         
         for match in matches:
             if match in url:
@@ -235,7 +245,32 @@ class UrlManager:
                 if protocol in protocols:
                     print(f'URL pattern is valid. ({protocol})')
                     return True
+        print('URL pattern is invalid.')
+        print(f'URL: {url}')
         return False
+
+    @staticmethod
+    def convert_to_pattern(url) -> str:
+        """
+        -> https://letterboxd.com/fastfingertips/list/list_name/
+        <- fastfingertips/list/list_name/
+        """
+        
+        matches = ['letterboxd.com/', 'boxd.it/']
+        protocols = ['http://', 'https://']
+
+        print(f'Converting input: {url}')
+        for protocol in protocols:
+            if protocol in url:
+                for match in matches:
+                    if match in url:
+                        if match == 'boxd.it/':
+                            return url
+                        url = url.replace(protocol+match, '')
+                        print(f'Converted URL: {url}')
+                        return url
+        print(f'Data is not letterboxd url. Not converted. ({url})')
+        return url
 
     @staticmethod
     def get_list_domain_name(url) -> str:
@@ -309,7 +344,7 @@ class InputManager:
         return data.strip() if data else None
 
     @staticmethod
-    def check_and_format_url(data):
+    def convert_to_url(data):
         """
         normal:
             fastfingertips/list_name                              -> fastfingertips/list_name
@@ -456,7 +491,7 @@ class Page:
     st.markdown(config['background']['dark'], unsafe_allow_html=True)
 
     def __init__(self):
-        pass
+        self.repo_slug = 'letterboxd-downloader-web'
 
     def create_title(self, text:str=None):
         if text is None:
@@ -513,23 +548,26 @@ if __name__ == "__main__":
 
     # Input
     input_manager = InputManager()
-    data = input_manager.process_data()
+    user_input = input_manager.process_data()
 
     notifier = Notifier()
     notifier.link_update('dynamic_data')
 
     # Process data
-    if data:
-        input_is_url = UrlManager.check_string_is_url(data)
+    if user_input:
+        input_is_url = UrlManager.is_url(user_input)
+        url_is_short = UrlManager.is_short_url(user_input)
 
-        if not input_is_url:
-            # data is not url, so we check if it is username/list-title
-            data = input_manager.check_and_format_url(data)
-
-        if data:
+        if url_is_short:
+            user_input = user_input.replace('/detail', '')
+        else:
+            user_input = UrlManager.convert_to_pattern(user_input)
+            user_input = input_manager.convert_to_url(user_input)
+                
+        print(f'User input: {user_input}')
+        if user_input:
             # create checker object for page
-            is_letterboxd_list = UrlManager.check_url_pattern(data)
-            url_dom = get_dom_from_url(data)
+            url_dom = get_dom_from_url(user_input)
             checker = Checker(url_dom)
             list_meta_verify = checker.check_page_is_list()
 
@@ -537,10 +575,10 @@ if __name__ == "__main__":
 
             if list_meta_verify['is_list']:
                 # send notification
-                notifier.send(f'List downloaded: {data}')
+                notifier.send(f'List downloaded: {user_input}')
 
                 # create checker object for list
-                checked_list = checker.user_list_check(data)
+                checked_list = checker.user_list_check(user_input)
 
                 # address is list, so we can create the object now
                 movie_list = MovieList(
