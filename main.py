@@ -326,7 +326,7 @@ class InputManager:
     def __init__(self):
         self.data = {
             'input': st.text_input(label=self.textbox_placeholder),
-            'query': st.experimental_get_query_params()
+            'query': st.query_params.to_dict()
         }
 
     def process_data(self):
@@ -337,7 +337,7 @@ class InputManager:
             data = input_data
         elif 'q' in query_data:
             # URL Params Found
-            data = query_data['q'][0]
+            data = query_data['q']
         else:
             data = None
 
