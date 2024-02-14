@@ -85,10 +85,13 @@ class MovieList(Url):
             self.movie_count = self.dom_parser.get_movie_count_from_meta()
 
         def get_movies(self, caching = False) -> list:
+
             print('Fetching movies from list..')
+
             if caching:
                 progress_text = 'Getting movies from list..'
                 my_bar = st.progress(0, text=progress_text)
+
             movie_rank = 1
 
             for current_page_index in stqdm(range(int(self.last_page)), desc='Getting movies from list..'):
@@ -131,24 +134,24 @@ class MovieList(Url):
                         movieLinkElement = movieHeadlineElement.find('a')
 
                         # MOVIE NAME
-                        movieName = movieLinkElement.text
+                        movie_name = movieLinkElement.text
 
                         # MOVIE LINK
-                        movieLink = 'https://letterboxd.com' + movieLinkElement.get('href') 
+                        movie_link = 'https://letterboxd.com' + movieLinkElement.get('href') 
 
                         # MOVIE YEAR
                         try:
-                            movieYear = movieHeadlineElement.find('small').text
+                            movie_year = movieHeadlineElement.find('small').text
                         except:
-                            movieYear = ''
-                            print(f'Movie year could not be pulled. Check link: {movieLink}')
+                            movie_year = ''
+                            print(f'Movie year could not be pulled. Check link: {movie_link}')
 
                         # ADD MOVIE TO MOVIES LIST
                         self._movies.append({
-                            "rank": movie_rank,
-                            "year": movieYear,
-                            "name": movieName,
-                            "link": movieLink
+                            "Rank": movie_rank,
+                            "Year": movie_year,
+                            "Title": movie_name,
+                            "LetterboxdURI": movie_link
                         })
                         movie_rank += 1
                     if caching:
@@ -161,8 +164,8 @@ class MovieList(Url):
                         my_bar.progress(current_percentage, text=progress_text)
                 except Exception as e:
                     print(f'An error was encountered while obtaining movie information. Error: {e}')
-            time.sleep(.4)
             if caching:
+                time.sleep(.4)
                 my_bar.empty()
             return self._movies
 
@@ -462,6 +465,7 @@ class InputManager:
         return None
 
 class Page:
+
     config = {
         'page_config':{ 
             'page_title':'Letterboxd List Downloader',
@@ -573,7 +577,7 @@ def get_csv_syntax(movies) -> str:
     header = ['Year', 'Title', 'LetterboxdURI']
     csv_syntax = ','.join(header) + '\n'
     for movie in movies:
-        csv_syntax += f'{movie["year"]},{movie["name"]},{movie["link"]}\n'
+        csv_syntax += f'{movie["Year"]},{movie["Title"]},{movie["LetterboxdURI"]}\n'
     return csv_syntax
 
 if __name__ == "__main__":
@@ -609,6 +613,8 @@ if __name__ == "__main__":
             list_meta_verify = checker.check_page_is_list()
             
             if list_meta_verify['is_list']:
+                button = st.button('Get again.')
+
                 # Notifier
                 notifier = Notifier()
                 notifier.link_update('dynamic_data')
@@ -637,27 +643,29 @@ if __name__ == "__main__":
                     st.dataframe(
                         pd.DataFrame(
                             movie_list.movies,
-                            columns=["rank", "year", "name", "link"]
+                            columns=["Rank", "Year", "Title", "LetterboxdURI"]
                         ),
                         hide_index=True,
                         use_container_width=True,
                     )
                     notifier.send(f'List parsed: {user_input}')
 
-                    # Download process
-                    csv_data = get_csv_syntax(movie_list.movies)
-                    download_filename = movie_list.slug + '.csv'
+                    if False:
+                        # Download process
+                        csv_data = get_csv_syntax(movie_list.movies)
+                        download_filename = movie_list.slug + '.csv'
 
-                    download_button = st.download_button(
-                        label="Download CSV",
-                        data=csv_data,
-                        file_name=download_filename,
-                        mime='text/csv'
-                    )
+                        download_button = st.download_button(
+                            label="Download CSV",
+                            data=csv_data,
+                            file_name=download_filename,
+                            mime='text/csv'
+                        )
 
-                    if download_button:
-                        st.success(f'{download_filename} downloaded.')
-                        notifier.send(f'List downlaoded: {user_input}')
+                        if download_button:
+                            st.success(f'{download_filename} downloaded.')
+                            notifier.send(f'List downlaoded: {user_input}')
+
             elif url_dom.find('body', class_='error'):
                 # letterboxd original message
                 err_msg = url_dom.find('body', class_='error')
