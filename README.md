@@ -35,7 +35,7 @@ If you prefer to run the Letterboxd List Downloader locally, follow these steps:
 
 1. **Clone the Repository:**
     ```bash
-    git clone https://github.com/FastFingertips/lizard-web.git
+    git clone https://github.com/FastFingertips/lizard.git
     ```
 
 2. **Install Dependencies:**
