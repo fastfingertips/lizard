@@ -471,8 +471,8 @@ class Page:
             'page_title':'Letterboxd List Downloader',
             'page_icon':'🎬',
             'menu_items':{
-            'Get Help': 'https://github.com/FastFingertips/streamlit-letterboxd-downloader',
-            'Report a bug': 'https://github.com/FastFingertips/streamlit-letterboxd-downloader/issues',
+            'Get Help': 'https://github.com/FastFingertips/lizard',
+            'Report a bug': 'https://github.com/FastFingertips/lizard/issues',
             'About': 'This project is designed to download lists from Letterboxd. The developer behind it is [@FastFingertips](https://github.com/FastFingertips).'
             }
         },
@@ -500,7 +500,7 @@ class Page:
     st.markdown(config['background']['dark'], unsafe_allow_html=True)
 
     def __init__(self):
-        self.repo_slug = 'letterboxd-downloader-web'
+        self.repo_slug = 'lizard'
 
     def create_title(self, text:str=None):
         if text is None:
@@ -525,10 +525,10 @@ class Page:
                 .foooter img {vertical-align: middle;}
             </style>
             <div class="footer">
-                <a href="https://github.com/FastFingertips/letterboxd-downloader-web" target="_blank" rel="noopener noreferrer">
-                    <img src="https://img.shields.io/github/last-commit/fastfingertips/letterboxd-downloader-web?style=flat&&label=last%20update&labelColor=%2314181C&color=%2320272E"/>
+                <a href="https://github.com/FastFingertips/lizard" target="_blank" rel="noopener noreferrer">
+                    <img src="https://img.shields.io/github/last-commit/fastfingertips/lizard?style=flat&&label=last%20update&labelColor=%2314181C&color=%2320272E"/>
                 </a>
-                <img src="https://visitor-badge.laobi.icu/badge?page_id=FastFingertips.letterboxd-downloader-web&left_color=%2314181C&right_color=%2320272E"/>
+                <img src="https://visitor-badge.laobi.icu/badge?page_id=FastFingertips.lizardb&left_color=%2314181C&right_color=%2320272E"/>
                 <a href="https://letterboxd.com/fastfingertips/" target="_blank" rel="noopener noreferrer">
                     <img src="https://img.shields.io/badge/letterboxd-fastfingertips-black?style=flat&labelColor=14181C&color=20272E"/>
                 </a>
