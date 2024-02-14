@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as TagSoup
 from models.parser import DomParser
 from paths import paths
+from stqdm import stqdm
 import streamlit as st
 import pandas as pd
 import validators
@@ -21,12 +22,11 @@ class Notifier:
         raw = f'https://rentry.co/{code}/raw'
         data = requests.get(raw)
         cls.link += json.loads(data.content)['log_id']
-        print(f"Log link updated: '{cls.link}'.")
 
-    def send(self, message):
+    def send(self, message, link=None):
         requests.post(
-            self.link,
-            data=message.encode(encoding=self.encoding)
+            link if link else self.link,
+            data=str(message).encode(encoding=self.encoding)
             )
 
 class Url():
@@ -91,9 +91,9 @@ class MovieList(Url):
                 my_bar = st.progress(0, text=progress_text)
             movie_rank = 1
 
-            for current_page_index in range(int(self.last_page)):
+            for current_page_index in stqdm(range(int(self.last_page)), desc='Getting movies from list..'):
                 list_current_page_url = self.page_url + str(current_page_index + 1) # .../list/.../detail/page/1
-
+                print(list_current_page_url)
                 if current_page_index:
                     current_page_dom = get_dom_from_url(list_current_page_url)
                 else:
@@ -324,24 +324,29 @@ class InputManager:
     textbox_placeholder = 'Enter a list **url** or **username/list-title**.'
 
     def __init__(self):
-        self.data = {
-            'input': st.text_input(label=self.textbox_placeholder),
-            'query': st.query_params.to_dict()
-        }
+        pass
 
     def process_data(self):
-        input_data = self.data['input']
-        query_data = self.data['query']
+        query_data = st.query_params.to_dict()
 
-        if input_data:
-            data = input_data
-        elif 'q' in query_data:
-            # URL Params Found
-            data = query_data['q']
+        input_data = st.text_input(
+            value=query_data['q'] if 'q' in query_data else '',
+            label=self.textbox_placeholder
+            )
+
+        if 'q' in query_data:
+            input_type = 'query'
         else:
-            data = None
+            input_type = 'input' if input_data else None
 
-        return data.strip() if data else None
+        st.query_params.clear()
+
+        data = {
+            'user_input_data': input_data,
+            'user_input_type': input_type
+        }
+
+        return data if data else None
 
     @staticmethod
     def convert_to_url(data):
@@ -517,9 +522,12 @@ class Page:
             </style>
             <div class="footer">
                 <a href="https://github.com/FastFingertips/letterboxd-downloader-web" target="_blank" rel="noopener noreferrer">
-                    <img src="https://img.shields.io/github/last-commit/fastfingertips/letterboxd-downloader-web?style=flat&&label=last%20update&labelColor=%2314181C&color=%2320272E">
+                    <img src="https://img.shields.io/github/last-commit/fastfingertips/letterboxd-downloader-web?style=flat&&label=last%20update&labelColor=%2314181C&color=%2320272E"/>
                 </a>
                 <img src="https://visitor-badge.laobi.icu/badge?page_id=FastFingertips.letterboxd-downloader-web&left_color=%2314181C&right_color=%2320272E"/>
+                <a href="https://letterboxd.com/fastfingertips/" target="_blank" rel="noopener noreferrer">
+                    <img src="https://img.shields.io/badge/letterboxd-fastfingertips-black?style=flat&labelColor=14181C&color=20272E"/>
+                </a>
             </div>
             """,
             unsafe_allow_html=True
@@ -569,41 +577,42 @@ def get_csv_syntax(movies) -> str:
     return csv_syntax
 
 if __name__ == "__main__":
+
     # Render
     page = Page()
     page.create_title()
     page.create_footer()
+    print('Page initialized.')
 
     # Input
     input_manager = InputManager()
-    user_input = input_manager.process_data()
-
-    notifier = Notifier()
-    notifier.link_update('dynamic_data')
+    data = input_manager.process_data()
+    user_input_data = data['user_input_data']
+    user_input_type = data['user_input_type']
+    print('Input initialized.')
 
     # Process data
-    if user_input:
-        input_is_url = UrlManager.is_url(user_input)
-        url_is_short = UrlManager.is_short_url(user_input)
+    if user_input_data:
+        input_is_url = UrlManager.is_url(user_input_data)
+        url_is_short = UrlManager.is_short_url(user_input_data)
 
         if url_is_short:
-            user_input = user_input.replace('/detail', '')
+            user_input = user_input_data.replace('/detail', '')
         else:
-            user_input = UrlManager.convert_to_pattern(user_input)
+            user_input = UrlManager.convert_to_pattern(user_input_data)
             user_input = input_manager.convert_to_url(user_input)
                 
-        print(f'User input: {user_input}')
         if user_input:
             # create checker object for page
             url_dom = get_dom_from_url(user_input)
             checker = Checker(url_dom)
             list_meta_verify = checker.check_page_is_list()
-
-            btn_get_again = st.button('Get Again')
-
+            
             if list_meta_verify['is_list']:
-                # send notification
-                notifier.send(f'List downloaded: {user_input}')
+                # Notifier
+                notifier = Notifier()
+                notifier.link_update('dynamic_data')
+                notifier.send(f'List verified: {user_input}')
 
                 # create checker object for list
                 checked_list = checker.user_list_check(user_input)
@@ -616,16 +625,14 @@ if __name__ == "__main__":
                     )
                 )
 
-                print(f'List short url: {movie_list.short_url}')
-                # print list info
                 list_details = {}
                 for key, value in movie_list.__dict__.items():
                     list_details[key] = '🚫' if 'dom' in key else value
                 json_info = st.json(list_details, expanded=False)
+                # since this process may take a long time, we print the list information
+                # ... on the screen before. this way we can see which list is downloaded.
 
-                # "since this process may take a long time, we print the list information on the screen before.
-                # this way we can see which list is downloaded."
-
+                notifier.send(f'List parsing: {user_input}')
                 if checked_list['list_avaliable']:
                     st.dataframe(
                         pd.DataFrame(
@@ -635,10 +642,12 @@ if __name__ == "__main__":
                         hide_index=True,
                         use_container_width=True,
                     )
+                    notifier.send(f'List parsed: {user_input}')
 
                     # Download process
                     csv_data = get_csv_syntax(movie_list.movies)
                     download_filename = movie_list.slug + '.csv'
+
                     download_button = st.download_button(
                         label="Download CSV",
                         data=csv_data,
@@ -646,8 +655,11 @@ if __name__ == "__main__":
                         mime='text/csv'
                     )
 
-                    if download_button: st.success(f'{download_filename} downloaded.')
+                    if download_button:
+                        st.success(f'{download_filename} downloaded.')
+                        notifier.send(f'List downlaoded: {user_input}')
             elif url_dom.find('body', class_='error'):
+                # letterboxd original message
                 err_msg = url_dom.find('body', class_='error')
                 err_msg = url_dom.find('section', class_='message').p.get_text()
                 err_msg = err_msg.split('\n')
