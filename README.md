@@ -4,6 +4,8 @@ This project provides a [web-based](https://lizard.streamlit.app/) tool for down
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.11.4-blue)](https://www.python.org) [![Streamlit](https://img.shields.io/badge/Streamlit-1.30.0-green)](https://streamlit.io)
 
+https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907-8de5abc170b8
+
 ### Table of Contents
 
 - [Usage](#usage)
