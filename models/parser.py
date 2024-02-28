@@ -1,4 +1,5 @@
-from paths import paths
+from models.config import paths
+
 
 class DomParser:
 
