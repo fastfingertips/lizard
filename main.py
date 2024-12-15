@@ -43,19 +43,19 @@ if __name__ == "__main__":
         else:
             user_input = convert_to_pattern(user_input_data)
             user_input = input_manager.convert_to_url(user_input)
-                
+
         if user_input:
             # create checker object for page
             url_dom = get_dom_from_url(user_input)
             checker = Checker(url_dom)
             list_meta_verify = checker.check_page_is_list()
-            
+
             if list_meta_verify['is_list']:
                 button = st.button('Get again.')
 
                 # Notifier
                 notifier = Notifier()
-                notifier.link_update('dynamic_data')
+                notifier.set_link_code("fastfingertips-lizard")
                 notifier.send(f'List verified: {user_input}')
 
                 # create checker object for list

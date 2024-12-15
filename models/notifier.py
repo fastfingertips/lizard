@@ -10,10 +10,13 @@ class Notifier:
         pass
 
     @classmethod
-    def link_update(cls, code):
+    def set_link_code(cls, code):
+        cls.link += code
+
+    def get_link_code_from_rentry(cls, code, key="log_id"):
         raw = f'https://rentry.co/{code}/raw'
         data = requests.get(raw)
-        cls.link += json.loads(data.content)['log_id']
+        return json.loads(data.content)[key]
 
     def send(self, message, link=None):
         requests.post(
