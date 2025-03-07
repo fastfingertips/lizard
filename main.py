@@ -18,6 +18,12 @@ from models.utils import (
     get_csv_syntax
     )
 
+def check_user_input(user_input_data):
+    if not user_input_data:
+        st.write('_Awaiting input.._')
+        return False
+    return True
+
 if __name__ == "__main__":
 
     # Render
@@ -34,7 +40,7 @@ if __name__ == "__main__":
     print('Input initialized.')
 
     # Process data
-    if user_input_data:
+    if check_user_input(user_input_data):
         input_is_url = is_url(user_input_data)
         url_is_short = is_short_url(user_input_data)
 
@@ -115,5 +121,3 @@ if __name__ == "__main__":
                 st.warning('Please enter a valid **list url** or **username/list-title.**', icon='💡')
         else:
             st.warning('**username/list-title.**', icon='💡')
-    else:
-        st.write('_Awaiting input.._')
