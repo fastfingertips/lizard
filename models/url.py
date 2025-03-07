@@ -49,10 +49,12 @@ class Url():
 
 # -- FUNCTIONS --
 
-def check_url_match(url_1, url_2) -> bool:
-    if url_1 == url_2 or f'{url_1}/' == url_2:
-        return True
-    return False
+def check_url_match(base_url, target_url) -> bool:
+    """
+    this function checks if two URLs match,
+    and returns a boolean value as the result.
+    """
+    return base_url == target_url or f'{base_url}/' == target_url
 
 def is_short_url(url) -> bool:
     """
