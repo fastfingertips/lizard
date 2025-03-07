@@ -24,6 +24,14 @@ def check_user_input(user_input_data):
         return False
     return True
 
+def catch_error_message(url_dom) -> bool|str:
+    err = url_dom.find('body', class_='error')
+    if err:
+        err = url_dom.find('section', class_='message').p.get_text()
+        err = err.split('\n')[0].strip()
+        return err
+    return False
+
 if __name__ == "__main__":
 
     # Render
@@ -50,12 +58,18 @@ if __name__ == "__main__":
             user_input = convert_to_pattern(user_input_data)
             user_input = input_manager.convert_to_url(user_input)
 
-        if user_input:
+        if not user_input:
+            st.warning('**username/list-title.**', icon='💡')
+        else:
             # create checker object for page
             url_dom = get_dom_from_url(user_input)
+            err_msg = catch_error_message(url_dom)
+
             checker = Checker(url_dom)
             list_meta_verify = checker.check_page_is_list()
 
+            if err_msg:
+                st.error(f'{err_msg}', icon='👀')
             if list_meta_verify['is_list']:
                 button = st.button('Get again.')
 
@@ -109,15 +123,5 @@ if __name__ == "__main__":
                         if download_button:
                             st.success(f'{download_filename} downloaded.')
                             notifier.send(f'List downlaoded: {user_input}')
-
-            elif url_dom.find('body', class_='error'):
-                # letterboxd original message
-                err_msg = url_dom.find('body', class_='error')
-                err_msg = url_dom.find('section', class_='message').p.get_text()
-                err_msg = err_msg.split('\n')
-                err_msg = err_msg[0].strip()
-                st.error(f'{err_msg}', icon='👀')
             else:
                 st.warning('Please enter a valid **list url** or **username/list-title.**', icon='💡')
-        else:
-            st.warning('**username/list-title.**', icon='💡')
