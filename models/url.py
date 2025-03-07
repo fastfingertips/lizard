@@ -1,11 +1,14 @@
+import validators
 from models.parser import DomParser
 from models.utils import get_dom_from_url
-import validators
+from models.constants import (
+    URL_PROTOCOLS,
+    DOMAIN_SHORT,
+    DOMAIN_MATCHES,
+)
 
 
 class Url():
-
-    domain_name = 'https://letterboxd.com/'
 
     def __init__(self, url, url_dom=None):
         
@@ -47,7 +50,6 @@ class Url():
             self._detail_dom_parser = DomParser(self.detail_url_dom)
         return self._detail_dom_parser
 
-# -- FUNCTIONS --
 
 def check_url_match(base_url, target_url) -> bool:
     """
@@ -61,9 +63,7 @@ def is_short_url(url) -> bool:
     this function checks if the URL is a short URL or not,
     and returns a boolean value as the result.
     """
-    short_domain = 'boxd.it'
-    protocols = ['http://', 'https://']
-    return any(prot+short_domain in url for prot in protocols)
+    return any(prot+DOMAIN_SHORT in url for prot in URL_PROTOCOLS)
 
 def is_url(url) -> bool:
     """
@@ -76,16 +76,12 @@ def check_url_pattern(url) -> bool:
     """
     this function checks if the URL is a list or not,
     and returns a boolean value as the result.
-    """
-
-    matches = ['letterboxd.com/', 'boxd.it/']
-    protocols = ['http://', 'https://']
-    
-    for match in matches:
+    """    
+    for match in DOMAIN_MATCHES:
         if match in url:
             match_index = url.index(match)
             protocol = url[:match_index]
-            if protocol in protocols:
+            if protocol in URL_PROTOCOLS:
                 print(f'URL pattern is valid. ({protocol})')
                 return True
     print('URL pattern is invalid.')
@@ -97,21 +93,17 @@ def convert_to_pattern(url) -> str:
     -> https://letterboxd.com/fastfingertips/list/list_name/
     <- fastfingertips/list/list_name/
     """
-    
-    matches = ['letterboxd.com/', 'boxd.it/']
-    protocols = ['http://', 'https://']
-
     print(f'Converting input: {url}')
-    for protocol in protocols:
+    for protocol in URL_PROTOCOLS:
         if protocol in url:
-            for match in matches:
+            for match in DOMAIN_MATCHES:
                 if match in url:
                     if match == 'boxd.it/':
                         return url
                     url = url.replace(protocol+match, '')
                     print(f'Converted URL: {url}')
                     return url
-    print(f'Data is not letterboxd url. Not converted. ({url})')
+    print(f'Data is not a letterboxd URL. Not converted. ({url})')
     return url
 
 def get_list_slug(url) -> str:

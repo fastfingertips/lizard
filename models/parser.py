@@ -1,5 +1,5 @@
 from models.config import paths
-
+from models.constants import DOMAIN_SHORT
 
 class DomParser:
 
@@ -110,7 +110,7 @@ class DomParser:
             # print(f'Communication with the page is complete. It is learned that the number of pages in the list is {last_page_no}.')
             return last_page_no # aftermath
 
-    def get_list_short_url(self, domain="boxd.it", default=None) -> str:
+    def get_list_short_url(self, domain=DOMAIN_SHORT, default=None) -> str:
         """
         Get the short url of the list.
         """
