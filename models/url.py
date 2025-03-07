@@ -115,4 +115,8 @@ def convert_to_pattern(url) -> str:
     return url
 
 def get_list_domain_name(url) -> str:
+    """
+    extract domain name from a URL containing '/list/'.
+    example: 'https://letterboxd.com/fastfingertips/list/list_name/ -> 'fastfingertips'
+    """
     return url[url.index('/list/') + len('/list/'):].replace('/', '')
