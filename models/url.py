@@ -16,7 +16,7 @@ class Url():
         self._url_dom = url_dom
         self._detail_url_dom = None
 
-        self.slug = get_list_domain_name(self.url)
+        self.slug = get_list_slug(self.url)
 
         self._dom_parser = None
         self._detail_dom_parser = None
@@ -114,9 +114,9 @@ def convert_to_pattern(url) -> str:
     print(f'Data is not letterboxd url. Not converted. ({url})')
     return url
 
-def get_list_domain_name(url) -> str:
+def get_list_slug(url) -> str:
     """
-    extract domain name from a URL containing '/list/'.
-    example: 'https://letterboxd.com/fastfingertips/list/list_name/ -> 'fastfingertips'
+    extract the slug from a URL containing '/list/'.
+    example: 'https://letterboxd.com/fastfingertips/list/list_name/' -> 'list_name'
     """
     return url[url.index('/list/') + len('/list/'):].replace('/', '')
