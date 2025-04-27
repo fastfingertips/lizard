@@ -82,10 +82,9 @@ def check_url_pattern(url) -> bool:
             match_index = url.index(match)
             protocol = url[:match_index]
             if protocol in URL_PROTOCOLS:
-                print(f'URL pattern is valid. ({protocol})')
+                # > URL pattern is valid
                 return True
-    print('URL pattern is invalid.')
-    print(f'URL: {url}')
+    # > Url pattern is invalid
     return False
 
 def convert_to_pattern(url) -> str:
@@ -93,7 +92,6 @@ def convert_to_pattern(url) -> str:
     -> https://letterboxd.com/fastfingertips/list/list_name/
     <- fastfingertips/list/list_name/
     """
-    print(f'Converting input: {url}')
     for protocol in URL_PROTOCOLS:
         if protocol in url:
             for match in DOMAIN_MATCHES:
@@ -101,9 +99,7 @@ def convert_to_pattern(url) -> str:
                     if match == 'boxd.it/':
                         return url
                     url = url.replace(protocol+match, '')
-                    print(f'Converted URL: {url}')
                     return url
-    print(f'Data is not a letterboxd URL. Not converted. ({url})')
     return url
 
 def get_list_slug(url) -> str:
