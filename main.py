@@ -5,6 +5,7 @@ from models.movie_list import MovieList
 from models.notifier import Notifier
 import streamlit as st
 import pandas as pd
+from typing import Union
 
 from models.url import (
     convert_to_pattern,
@@ -16,7 +17,7 @@ from models.utils import (
     get_csv_syntax
     )
 
-def catch_error_message(url_dom) -> bool|str:
+def catch_error_message(url_dom) -> Union[bool, str]:
     err = url_dom.find('body', class_='error')
     if err:
         err = url_dom.find('section', class_='message').p.get_text()
