@@ -15,17 +15,17 @@ https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907
 
 1. Enter the `username/list-name` or the direct `list URL` into the textbox on the main page or use the `'q'` argument as a URL parameter.
    - Examples for user and list:
-     - `fastfingertips/list_name` ([with q arg](https://lizard.streamlit.app/?q=fastfingertips/list_name))
-     - `fastfingertips/list/list_name` ([with q arg](https://lizard.streamlit.app/?q=fastfingertips/list/list_name))
+     - [`fastfingertips/list_name`](https://lizard.streamlit.app/?q=fastfingertips/list_name)
+     - [`fastfingertips/list/list_name`](https://lizard.streamlit.app/?q=fastfingertips/list/list_name)
      - _with filter_:
-       - `fastfingertips/list_name/genre/crime` ([with q arg](https://lizard.streamlit.app/?q=fastfingertips/list_name/genre/crime))
-       - `fastfingertips/list/list_name/genre/crime` ([with q arg](https://lizard.streamlit.app/?q=fastfingertips/list/list_name/genre/crime))
+       - [`fastfingertips/list_name/genre/crime`](https://lizard.streamlit.app/?q=fastfingertips/list_name/genre/crime)
+       - [`fastfingertips/list/list_name/genre/crime`](https://lizard.streamlit.app/?q=fastfingertips/list/list_name/genre/crime)
    - Examples for user list URLs (http or https):
-     - `https://letterboxd.com/fastfingertips/list/list_name` ([with q arg](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name))
-     - `https://boxd.it/rSrSc` ([with q arg](https://lizard.streamlit.app/?q=https://boxd.it/rSrSc))
+     - [`https://letterboxd.com/fastfingertips/list/list_name`](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name)
+     - [`https://boxd.it/rSrSc`](https://lizard.streamlit.app/?q=https://boxd.it/rSrSc)
      - _with filter_:
-       - `https://letterboxd.com/fastfingertips/list/list_name/genre/crime` ([with q arg](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name/genre/crime))
-       - `https://letterboxd.com/fastfingertips/list/list_name/decade/1990s/genre/crime` ([with q arg](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name/decade/1990s/genre/crime))
+       - [`https://letterboxd.com/fastfingertips/list/list_name/genre/crime`](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name/genre/crime)
+       - [`https://letterboxd.com/fastfingertips/list/list_name/decade/1990s/genre/crime`](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name/decade/1990s/genre/crime)
        - letterboxd short links do not support filters, so we did not implement this. it seems these are used only for sharing the list.
 0. Press Enter.
 0. If the list is verified, detailed information about the list will be presented.
