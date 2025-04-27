@@ -8,8 +8,6 @@ import pandas as pd
 
 from models.url import (
     convert_to_pattern,
-    is_short_url,
-    is_url,
     Url
     )
 
@@ -32,34 +30,26 @@ if __name__ == "__main__":
     page = Page()
     page.create_title()
     page.create_footer()
-    print('Page initialized.')
 
     # Input
-    input_manager = Input()
-    data = input_manager.process_data()
-    user_input_data = data['user_input_data']
-    user_input_type = data['user_input_type']
-    print('Input initialized.')
+    user_input = Input()
+    user_input.process_data()
 
-    # Process data
-    if not user_input_data:
+    if not user_input.data:
         st.write('_Awaiting input.._')
         st.stop()
-    
-    input_is_url = is_url(user_input_data)
-    url_is_short = is_short_url(user_input_data)
 
-    if url_is_short:
-        user_input = user_input_data.replace('/detail', '')
+    if user_input.is_short_url:
+        processed_input = user_input.data.replace('/detail', '')
     else:
-        user_input = convert_to_pattern(user_input_data)
-        user_input = input_manager.convert_to_url(user_input)
+        processed_input = convert_to_pattern(user_input.data)
+        processed_input = user_input.convert_to_url(processed_input)
 
-    if not user_input:
+    if not processed_input:
         st.warning('**username/list-title.**', icon='💡')
     else:
         # create checker object for page
-        url_dom = get_dom_from_url(user_input)
+        url_dom = get_dom_from_url(processed_input)
         err_msg = catch_error_message(url_dom)
 
         checker = Checker(url_dom)
@@ -73,10 +63,10 @@ if __name__ == "__main__":
             # Notifier
             notifier = Notifier()
             notifier.set_link_code("fastfingertips-lizard")
-            notifier.send(f'List verified: {user_input}')
+            notifier.send(f'List verified: {processed_input}')
 
             # create checker object for list
-            checked_list = checker.user_list_check(user_input)
+            checked_list = checker.user_list_check(processed_input)
 
             # address is list, so we can create the object now
             movie_list = MovieList(
@@ -93,7 +83,7 @@ if __name__ == "__main__":
             # since this process may take a long time, we print the list information
             # ... on the screen before. this way we can see which list is downloaded.
 
-            notifier.send(f'List parsing: {user_input}')
+            notifier.send(f'List parsing: {processed_input}')
             if checked_list['list_avaliable']:
                 st.dataframe(
                     pd.DataFrame(
@@ -103,7 +93,7 @@ if __name__ == "__main__":
                     hide_index=True,
                     use_container_width=True,
                 )
-                notifier.send(f'List parsed: {user_input}')
+                notifier.send(f'List parsed: {processed_input}')
 
                 if False:
                     # Download process
@@ -119,6 +109,6 @@ if __name__ == "__main__":
 
                     if download_button:
                         st.success(f'{download_filename} downloaded.')
-                        notifier.send(f'List downlaoded: {user_input}')
+                        notifier.send(f'List downlaoded: {processed_input}')
         else:
             st.warning('Please enter a valid **list url** or **username/list-title.**', icon='💡')
