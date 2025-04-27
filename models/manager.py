@@ -1,10 +1,15 @@
 import streamlit as st
+from models.url import is_url, is_short_url
 
 class Input:
     textbox_placeholder = 'Enter a list **url** or **username/list-title**.'
 
     def __init__(self):
-        pass
+        self.data = None
+        self.type = None
+        self.length = None
+        self.is_url = None
+        self.is_short_url = None
 
     def process_data(self):
         query_data = st.query_params.to_dict()
@@ -21,12 +26,11 @@ class Input:
 
         st.query_params.clear()
 
-        data = {
-            'user_input_data': input_data,
-            'user_input_type': input_type
-        }
-
-        return data if data else None
+        self.data = input_data
+        self.type = input_type
+        self.length = len(input_data)
+        self.is_url = is_url(input_data)
+        self.is_short_url = is_short_url(input_data)
 
     @staticmethod
     def convert_to_url(data):
@@ -60,7 +64,7 @@ class Input:
 
             # 1. remove '/' from start and end of string
             if len(data) <= 2:
-                print('Error: Data is too short.')
+                st.error('Data is too short.')
                 return None
 
             if data[0] == '/': data = data[1:]
@@ -68,7 +72,7 @@ class Input:
                 
             # 2. split data by '/'
             if '/' not in data:
-                print('Error: Data does not contain a / character.')
+                # > Data does not contain a '/' character.
                 return None
 
             data_blocks = data.split('/')
@@ -120,10 +124,6 @@ class Input:
                     data_blocks = data_blocks[1:]
                     pass
 
-            print(f'List name: {list_slug}')
-            print(f'Username: {username}')
-            print(f'Blocks: {data_blocks}')
-
             try:
                 if all([username, list_slug]):
                     filters = ''
@@ -131,12 +131,12 @@ class Input:
                         filters = '/'.join(data_blocks)
                     return f'https://letterboxd.com/{username}/list/{list_slug}/' + filters
                 else:
-                    print('Error: Username or list title is empty.')
+                    st.error('Username or list title is empty.')
             except Exception as e:
-                print(f'Error: {e}')
+                st.error(e)
                 pass
         else:
             # FUTURE: operations entered with only username or list name
-            print('Error: Data does not contain a / character.')
+            pass
 
         return None
