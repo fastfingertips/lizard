@@ -14,8 +14,9 @@ from models.url import (
 from models.utils import (
     get_dom_from_url,
     get_csv_syntax,
-    catch_error_message
     )
+
+from models.parser.utils import catch_error_message
 
 if __name__ == "__main__":
 

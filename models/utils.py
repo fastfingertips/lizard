@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup as TagSoup
 import requests
-from typing import Union
 
 def get_dom_from_url(_url) -> TagSoup:
     """
@@ -44,16 +43,3 @@ def get_csv_syntax(movies) -> str:
     for movie in movies:
         csv_syntax += f'{movie["Year"]},{movie["Title"]},{movie["LetterboxdURI"]}\n'
     return csv_syntax
-
-def catch_error_message(url_dom) -> Union[bool, str]:
-    """
-    Checks if the page contains an error message.
-    Returns the error message as a string if found, False otherwise.
-    """
-    err = url_dom.find('body', class_='error')
-    if err:
-        err = url_dom.find('section', class_='message').p.get_text()
-        err = err.split('\n')[0].strip()
-        return err
-    return False
-
