@@ -7,22 +7,20 @@ class Checker:
         self.dom = dom
         self.dom_parser = DomParser(dom)
 
-    def check_page_is_list(self) -> bool:
+    def is_list(self) -> bool:
         """
-        this function checks dom's meta tag,
-        og:type is letterboxd:list or not,
-        and returns bool value as result.
+        Checks if the current page is a letterboxd list.
+        Returns True if the page is a list, False otherwise.
         """
-
         meta_content = self.dom_parser.get_meta_content('og:type')
-
-        context = {
-            'is_list': meta_content == 'letterboxd:list',
-            'meta_content': meta_content
-            }
-        return context
+        return meta_content == 'letterboxd:list'
     
-    def user_list_check(self, url) -> dict:
+    def get_list_meta(self, url) -> dict:
+        """
+        Gets meta information about the list.
+        Returns a dictionary with list metadata and availability status.
+        """
+        data = {'is_available': False}
         try:
             list_url = self.dom_parser.get_meta_content('og:url')
             list_title = self.dom_parser.get_meta_content('og:title')
@@ -31,16 +29,12 @@ class Checker:
             if not check_url_match(url, list_url):
                 print(f'Redirected to {list_url}')
 
-            context = {
-                'list_url': list_url,
-                'list_title': list_title,
-                'list_owner': list_owner,
-                'list_avaliable': True,
+            data = {
+                'url': list_url,
+                'title': list_title,
+                'owner': list_owner,
+                'is_available': True
             }
         except Exception as e:
             print(f'An error occurred while checking the list. Error: {e}')
-            context = {
-                'list_avaliable': False
-            }
-        finally:
-            return context
+        return data
