@@ -11,11 +11,7 @@ from models.url import (
     Url
     )
 
-from models.utils import (
-    get_dom_from_url,
-    get_csv_syntax,
-    )
-
+from models.utils import get_dom_from_url
 from models.parser.utils import catch_error_message
 
 if __name__ == "__main__":
@@ -88,21 +84,7 @@ if __name__ == "__main__":
                     use_container_width=True,
                 )
                 notifier.send(f'List parsed: {processed_input}')
-
-                if False:
-                    # Download process
-                    csv_data = get_csv_syntax(movie_list.movies)
-                    download_filename = movie_list.slug + '.csv'
-
-                    download_button = st.download_button(
-                        label="Download CSV",
-                        data=csv_data,
-                        file_name=download_filename,
-                        mime='text/csv'
-                    )
-
-                    if download_button:
-                        st.success(f'{download_filename} downloaded.')
-                        notifier.send(f'List downlaoded: {processed_input}')
+            else:
+                st.warning('List is not available.')
         else:
             st.warning('Please enter a valid **list url** or **username/list-title.**', icon='💡')
