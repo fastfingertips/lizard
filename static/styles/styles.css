@@ -1,0 +1,20 @@
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    margin-bottom: 1em;
+    background-color: transparent;
+    color: white;
+    text-align: center;
+}
+
+.footer a {
+    text-decoration: none; 
+    margin-left: 0.5em; 
+    margin-right: 0.5em;
+}
+
+.footer img {
+    vertical-align: middle;
+} 
