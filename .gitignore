@@ -1,0 +1,49 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Cython debug symbols
+cython_debug/
+
+# Environments
+.env/
+.venv/
+env/
+venv/
+
+# Python package distributions
+build/
+dist/
+*.egg-info/
+
+# IDE and editor folders
+.idea/
+.vscode/
+
+# Pytest cache
+.cache/
+
+# PyCharm
+*.iml
+*.ipr
+*.iws
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# MyPy
+.mypy_cache/
+
+# Pylint
+pylint-report.txt
+pylint-global-header.txt
+
+# coverage reports
+.coverage
+.coverage.*
+nosetests.xml
+test_*.xml
+*.cover
+
+# Virtualenv
+venv/
