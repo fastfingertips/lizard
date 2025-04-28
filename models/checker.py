@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict
 from models.parser import DomParser
-from models.url import check_url_match
+from models.url.utils import check_url_match
 
 class ListMetaData(TypedDict):
     """Type definition for list metadata"""

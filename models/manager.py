@@ -1,5 +1,5 @@
 import streamlit as st
-from models.url import is_url, is_short_url
+from models.url.utils import is_url, is_short_url
 
 class Input:
     textbox_placeholder = 'Enter a list **url** or **username/list-title**.'
