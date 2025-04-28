@@ -5,7 +5,6 @@ from models.movie_list import MovieList
 from models.notifier import Notifier
 import streamlit as st
 import pandas as pd
-from typing import Union
 
 from models.url import (
     convert_to_pattern,
@@ -14,16 +13,9 @@ from models.url import (
 
 from models.utils import (
     get_dom_from_url,
-    get_csv_syntax
+    get_csv_syntax,
+    catch_error_message
     )
-
-def catch_error_message(url_dom) -> Union[bool, str]:
-    err = url_dom.find('body', class_='error')
-    if err:
-        err = url_dom.find('section', class_='message').p.get_text()
-        err = err.split('\n')[0].strip()
-        return err
-    return False
 
 if __name__ == "__main__":
 
@@ -54,11 +46,11 @@ if __name__ == "__main__":
         err_msg = catch_error_message(url_dom)
 
         checker = Checker(url_dom)
-        list_meta_verify = checker.check_page_is_list()
+        is_list = checker.is_list()
 
         if err_msg:
             st.error(f'{err_msg}', icon='👀')
-        if list_meta_verify['is_list']:
+        if is_list:
             button = st.button('Get again.')
 
             # Notifier
@@ -67,12 +59,12 @@ if __name__ == "__main__":
             notifier.send(f'List verified: {processed_input}')
 
             # create checker object for list
-            checked_list = checker.user_list_check(processed_input)
+            list_meta = checker.get_list_meta(processed_input)
 
             # address is list, so we can create the object now
             movie_list = MovieList(
                 Url(
-                    checked_list['list_url'],
+                    list_meta['url'],
                     url_dom
                 )
             )
@@ -85,7 +77,7 @@ if __name__ == "__main__":
             # ... on the screen before. this way we can see which list is downloaded.
 
             notifier.send(f'List parsing: {processed_input}')
-            if checked_list['list_avaliable']:
+            if list_meta['is_available']:
                 st.dataframe(
                     pd.DataFrame(
                         movie_list.movies,
