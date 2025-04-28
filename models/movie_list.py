@@ -1,5 +1,5 @@
 from models.utils import get_dom_from_url
-from models.config import paths
+from models.selectors import FilmSelectors
 from models.url import Url
 from stqdm import stqdm
 import streamlit as st
@@ -39,7 +39,7 @@ class MovieList(Url):
 
                 try:
                     # getting' films/posters container (<ul> element)
-                    filmDetailsList = current_page_dom.find(*paths['film_detail_list_ul'])
+                    filmDetailsList = current_page_dom.find(*FilmSelectors.LIST)
 
                     # above line is tryin' to get container, if it's None, tryin' alternative ways to get it
                     alternative_ways = ['ul.film-list', 'ul.poster-list', 'ul.film-details-list']
@@ -63,7 +63,7 @@ class MovieList(Url):
                     for currentFilmDetail in filmDetails:
 
                         # MOVIE NAME AND YEAR CONTAINER
-                        movieHeadlineElement = currentFilmDetail.find(*paths['movie_headline_element'])
+                        movieHeadlineElement = currentFilmDetail.find(*FilmSelectors.HEADLINE)
                         movieLinkElement = movieHeadlineElement.find('a')
 
                         # MOVIE NAME

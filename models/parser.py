@@ -1,4 +1,4 @@
-from models.config import paths
+from models.selectors import MetaSelectors, PageSelectors
 from models.constants import DOMAIN_SHORT
 
 class DomParser:
@@ -67,24 +67,28 @@ class DomParser:
         movie_count = int(movie_count_str)
         """
 
-        meta_description = self.dom.find(*paths['meta_description']).attrs['content']
+        try:
+            meta_description = self.dom.find(*MetaSelectors.DESCRIPTION).attrs['content'] 
 
-        for item in meta_description.split(' '):
-            if item[0].isdigit():
-                movie_count = item
-                for char in item:
-                    if not char.isdigit():
-                        movie_count = movie_count.replace(char, '')
-                break
-                        
-        movie_count = int(movie_count)
-        if movie_count is not None:
-            # print(f"Found the movie count in the meta description as {movie_count}.")
-            return int(movie_count)
-        else:
-            # handle the case where no digit is found in the meta description
-            print("Error: No digit found in the meta description.")
-            return None
+            for item in meta_description.split(' '):
+                if item[0].isdigit():
+                    movie_count = item
+                    for char in item:
+                        if not char.isdigit():
+                            movie_count = movie_count.replace(char, '')
+                    break
+                            
+            movie_count = int(movie_count)
+            if movie_count is not None:
+                # print(f"Found the movie count in the meta description as {movie_count}.")
+                return int(movie_count)
+            else:
+                # handle the case where no digit is found in the meta description
+                print("Error: No digit found in the meta description.")
+                return None
+        except (AttributeError, TypeError) as e:
+            print(f"Error while getting movie count from meta: {e}")
+            return default
 
     def get_list_last_page(self, default=None) -> int:
         """
@@ -99,7 +103,7 @@ class DomParser:
             # the text of the link in the last 'li' will give us how many pages our list is.
             # print('Checking the number of pages in the list..')
             # not created link when the number of movies is 100 or less in the list.
-            last_page_no = int(self.dom.find(*paths['last_page_no']).find_all("li")[-1].a.text)
+            last_page_no = int(self.dom.find(*PageSelectors.LAST_PAGE).find_all("li")[-1].a.text)
             # print(f'The list has more than one page ({last_page_no}).')
         except AttributeError: # exception when there is only one page.
             # print('There is no more than one page, this list is one page.')
