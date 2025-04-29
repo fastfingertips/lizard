@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Tuple
 from typing_extensions import TypeAlias
 
+
 Selector: TypeAlias = Tuple[str, Dict[str, str]]
 
 @dataclass

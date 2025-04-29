@@ -1,6 +1,7 @@
 from models.selectors import MetaSelectors, PageSelectors
 from models.constants import DOMAIN_SHORT
 
+
 class DomParser:
 
     def __init__(self, dom):

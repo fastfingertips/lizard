@@ -1,5 +1,4 @@
-from bs4 import BeautifulSoup as TagSoup
-import requests
+from core import requests, TagSoup
 
 def get_dom_from_url(_url) -> TagSoup:
     """

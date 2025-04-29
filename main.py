@@ -1,10 +1,10 @@
+from core import st, pd
+
 from models.config import Page
 from models.manager import Input
 from models.checker import Checker
 from models.movie_list import MovieList
 from models.notifier import Notifier
-import streamlit as st
-import pandas as pd
 from models.url import Url
 from models.utils import get_dom_from_url
 from models.parser.utils import catch_error_message

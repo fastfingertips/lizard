@@ -1,5 +1,5 @@
-import requests
-import json
+from core import requests, json
+
 
 class Notifier:
 

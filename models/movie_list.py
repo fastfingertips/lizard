@@ -1,9 +1,8 @@
+from core import st, time, stqdm
+
 from models.utils import get_dom_from_url
 from models.selectors import FilmSelectors
 from models.url import Url
-from stqdm import stqdm
-import streamlit as st
-import time
 
 
 class MovieList(Url):

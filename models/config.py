@@ -1,7 +1,7 @@
-import streamlit as st
+from core import os, st
 from dataclasses import dataclass
 from typing import Dict, Optional
-import os
+
 
 @dataclass
 class PageConfig:
