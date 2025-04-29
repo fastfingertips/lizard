@@ -4,13 +4,18 @@ def get_dom_from_url(_url) -> TagSoup:
     """
     Reads and retrieves the DOM of the specified page URL.
     """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+    }
     try:
         #> Provides information in the log file at the beginning of the connection.
         print(f'Conection to the address [{_url}] is being established..')
         while True:
             #> https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests
             try:
-                urlResponseCode = requests.get(_url, timeout=30)
+                urlResponseCode = requests.get(_url, headers=headers, timeout=30)
                 urlDom = TagSoup(urlResponseCode.content.decode('utf-8'), 'html.parser')
                 if urlDom is not None:
                     return urlDom # Returns the page DOM
