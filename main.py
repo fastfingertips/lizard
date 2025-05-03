@@ -10,6 +10,7 @@ from models.utils import get_dom_from_url
 from models.parser.utils import catch_error_message
 from models.url.utils import convert_to_pattern
 
+
 if __name__ == "__main__":
 
     # Render
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     # Input
     user_input = Input()
     user_input.process_data()
-
+ 
     if not user_input.data:
         st.write('_Awaiting input.._')
         st.stop()
@@ -33,54 +34,56 @@ if __name__ == "__main__":
 
     if not processed_input:
         st.warning('**username/list-title.**', icon='💡')
-    else:
-        # create checker object for page
-        url_dom = get_dom_from_url(processed_input)
-        err_msg = catch_error_message(url_dom)
+        st.stop()
 
-        checker = Checker(url_dom)
-        is_list = checker.is_list()
+    url_dom = get_dom_from_url(processed_input)
+    err_msg = catch_error_message(url_dom)
 
-        if err_msg:
-            st.error(f'{err_msg}', icon='👀')
-        if is_list:
-            button = st.button('Get again.')
+    checker = Checker(url_dom)
+    is_list = checker.is_list()
 
-            # Notifier
-            notifier = Notifier()
-            notifier.set_link_code("fastfingertips-lizard")
-            notifier.send(f'List verified: {processed_input}')
-
-            # create checker object for list
-            list_meta = checker.get_list_meta(processed_input)
-
-            # address is list, so we can create the object now
-            movie_list = MovieList(
-                Url(
-                    list_meta['url'],
-                    url_dom
-                )
-            )
-
-            list_details = {}
-            for key, value in movie_list.__dict__.items():
-                list_details[key] = '🚫' if 'dom' in key else value
-            json_info = st.json(list_details, expanded=False)
-            # since this process may take a long time, we print the list information
-            # ... on the screen before. this way we can see which list is downloaded.
-
-            notifier.send(f'List parsing: {processed_input}')
-            if list_meta['is_available']:
-                st.dataframe(
-                    pd.DataFrame(
-                        movie_list.movies,
-                        columns=["Rank", "Year", "Title", "LetterboxdURI"]
-                    ),
-                    hide_index=True,
-                    use_container_width=True,
-                )
-                notifier.send(f'List parsed: {processed_input}')
-            else:
-                st.warning('List is not available.')
-        else:
+    if err_msg:
+        st.error(f'{err_msg}', icon='👀')
+        if not is_list:
+            st.warning(f'The address is not a Letterboxd list.', icon='💡')
             st.warning('Please enter a valid **list url** or **username/list-title.**', icon='💡')
+        st.stop()
+
+    button = st.button('Get again.')
+
+    # Notifier
+    notifier = Notifier()
+    notifier.set_link_code("fastfingertips-lizard")
+    notifier.send(f'List verified: {processed_input}')
+
+    # create checker object for list
+    list_meta = checker.get_list_meta(processed_input)
+
+    # address is list, so we can create the object now
+    movie_list = MovieList(
+        Url(
+            list_meta['url'],
+            url_dom
+        )
+    )
+
+    list_details = {}
+    for key, value in movie_list.__dict__.items():
+        list_details[key] = '🚫' if 'dom' in key else value
+    json_info = st.json(list_details, expanded=False)
+    # since this process may take a long time, we print the list information
+    # ... on the screen before. this way we can see which list is downloaded.
+
+    notifier.send(f'List parsing: {processed_input}')
+    if list_meta['is_available']:
+        st.dataframe(
+            pd.DataFrame(
+                movie_list.movies,
+                columns=["Rank", "Year", "Title", "LetterboxdURI"]
+            ),
+            hide_index=True,
+            use_container_width=True,
+        )
+        notifier.send(f'List parsed: {processed_input}')
+    else:
+        st.warning('List is not available.')
