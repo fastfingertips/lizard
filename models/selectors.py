@@ -19,5 +19,7 @@ class MetaSelectors:
 @dataclass
 class PageSelectors:
     """Selectors for page elements"""
+    ERROR_BODY: Selector = ('body', {'class': 'error'})
+    ERROR_MESSAGE: Selector = ('section', {'class': 'message'})
     LAST_PAGE: Selector = ('div', {'class': 'paginate-pages'})
     ARTICLES: Selector = ('ul', {'class': 'poster-list -p70 film-list clear film-details-list'}) 
