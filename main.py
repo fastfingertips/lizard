@@ -1,42 +1,19 @@
-from core import st, pd
+import pandas as pd
+import streamlit as st
+from letterboxdpy.core.scraper import parse_url
 
+from models.checker import Checker
 from models.config import Page
 from models.manager import Input
-from models.checker import Checker
 from models.movie_list import MovieList
 from models.notifier import Notifier
-from models.url import Url
-from models.utils import get_dom_from_url
 from models.parser.utils import catch_error_message
+from models.url import Url
 from models.url.utils import convert_to_pattern
 
-
-if __name__ == "__main__":
-
-    # Render
-    page = Page()
-    page.create_title()
-    page.create_footer()
-
-    # Input
-    user_input = Input()
-    user_input.process_data()
- 
-    if not user_input.data:
-        st.write('_Awaiting input.._')
-        st.stop()
-
-    if user_input.is_short_url:
-        processed_input = user_input.data.replace('/detail', '')
-    else:
-        processed_input = convert_to_pattern(user_input.data)
-        processed_input = user_input.convert_to_url(processed_input)
-
-    if not processed_input:
-        st.warning('**username/list-title.**', icon='💡')
-        st.stop()
-
-    url_dom = get_dom_from_url(processed_input)
+def list_mode(processed_input):
+    
+    url_dom = parse_url(processed_input)
     err_msg = catch_error_message(url_dom)
 
     checker = Checker(url_dom)
@@ -87,3 +64,33 @@ if __name__ == "__main__":
         notifier.send(f'List parsed: {processed_input}')
     else:
         st.warning('List is not available.')
+
+
+if __name__ == "__main__":
+    page = Page()
+    page.create_title()
+    page.create_footer()
+    
+    user_input = Input()
+    user_input.process_data()
+ 
+    if not user_input.data:
+        st.write('_Awaiting input.._')
+        st.stop()
+
+    if user_input.is_username:
+        st.write('Username mode active')
+        processed_input = user_input.data
+        processed_input = user_input.convert_to_url(processed_input)
+    else:
+        st.write('URL mode active')
+        if user_input.is_short_url:
+            processed_input = user_input.data.replace('/detail', '')
+        else:
+            processed_input = convert_to_pattern(user_input.data)
+            processed_input = user_input.convert_to_url(processed_input)
+        list_mode(processed_input)
+
+    if not processed_input:
+        st.warning('**username/list-title.**', icon='💡')
+        st.stop()
