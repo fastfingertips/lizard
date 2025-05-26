@@ -12,6 +12,15 @@ class Input:
         self.is_url = None
         self.is_short_url = None
 
+        self.is_alpha = None
+        self.is_username = None
+        self.is_whitespace = None
+        self.is_empty = None
+
+        self.is_numeric = None
+        self.is_negative = None
+        self.is_positive = None
+
     def process_data(self):
         query_data = st.query_params.to_dict()
 
@@ -29,9 +38,20 @@ class Input:
 
         self.data = input_data
         self.type = input_type
-        self.length = len(input_data)
-        self.is_url = is_url(input_data)
-        self.is_short_url = is_short_url(input_data)
+        self.length = len(input_data) if input_data else 0
+
+        self.is_empty = not self.data
+        self.is_whitespace = self.data and self.data.isspace()
+        self.is_alpha = self.data and self.data.isalpha()
+        self.is_numeric = self.data and self.data.isdigit()
+        self.is_username = self.data and '/' not in self.data
+
+        self.is_negative = self.is_numeric and int(self.data) < 0
+        self.is_positive = self.is_numeric and int(self.data) > 0
+
+        self.is_url = not self.is_username and is_url(self.data)
+        self.is_short_url = not self.is_username and is_short_url(self.data)
+
 
     @staticmethod
     def convert_to_url(data):
@@ -137,7 +157,7 @@ class Input:
                 st.error(e)
                 pass
         else:
-            # FUTURE: operations entered with only username or list name
-            pass
+            # Username mode
+            return f'https://letterboxd.com/{data}/'
 
         return None
