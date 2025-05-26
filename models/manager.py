@@ -1,5 +1,6 @@
 from core import st
 from models.url.utils import is_url, is_short_url
+from letterboxdpy.constants.project import DOMAIN
 
 
 class Input:
@@ -150,7 +151,7 @@ class Input:
                     filters = ''
                     if data_blocks:
                         filters = '/'.join(data_blocks)
-                    return f'https://letterboxd.com/{username}/list/{list_slug}/' + filters
+                    return f'{DOMAIN}/{username}/list/{list_slug}/' + filters
                 else:
                     st.error('Username or list title is empty.')
             except Exception as e:
@@ -158,6 +159,6 @@ class Input:
                 pass
         else:
             # Username mode
-            return f'https://letterboxd.com/{data}/'
+            return f'{DOMAIN}/{data}/'
 
         return None

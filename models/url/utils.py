@@ -1,5 +1,5 @@
 from core import validators
-from models.constants import URL_PROTOCOLS, DOMAIN_SHORT, DOMAIN_MATCHES
+from letterboxdpy.constants.project import URL_PROTOCOLS, DOMAIN_SHORT, DOMAIN_MATCHES
 
 
 def check_url_match(base_url, target_url) -> bool:

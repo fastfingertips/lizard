@@ -1,6 +1,5 @@
 from models.selectors import MetaSelectors, PageSelectors
-from models.constants import DOMAIN_SHORT
-
+from letterboxdpy.constants.project import DOMAIN_SHORT
 
 class DomParser:
 

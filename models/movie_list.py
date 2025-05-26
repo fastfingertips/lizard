@@ -1,6 +1,7 @@
 from core import st, time, stqdm
 
 from letterboxdpy.core.scraper import parse_url
+from letterboxdpy.constants.project import DOMAIN
 from models.selectors import FilmSelectors
 from models.url import Url
 
@@ -66,7 +67,7 @@ class MovieList(Url):
                     movie_name = movie_link_element.text
 
                     # MOVIE LINK
-                    movie_link = 'https://letterboxd.com' + movie_link_element.get('href') 
+                    movie_link = DOMAIN + movie_link_element.get('href') 
 
                     # MOVIE YEAR
                     try:
