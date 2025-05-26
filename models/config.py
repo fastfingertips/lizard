@@ -7,6 +7,7 @@ from typing import Dict, Optional
 class PageConfig:
     page_title: str
     page_icon: str
+    initial_sidebar_state: str
     menu_items: Dict[str, str]
 
 @dataclass
@@ -29,6 +30,7 @@ class Page:
         config = PageConfig(
             page_title=self._page_title,
             page_icon='🎬',
+            initial_sidebar_state='collapsed',
             menu_items={
                 'Get Help': 'https://github.com/FastFingertips/lizard',
                 'Report a bug': 'https://github.com/FastFingertips/lizard/issues',
