@@ -1,5 +1,5 @@
 from models.parser import DomParser
-from models.url.utils import check_url_match
+from models.url.helpers import check_url_match
 from typing import Optional, TypedDict
 
 

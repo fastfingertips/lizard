@@ -9,7 +9,7 @@ from models.movie_list import MovieList
 from models.notifier import Notifier
 from models.parser.utils import catch_error_message
 from models.url import Url
-from models.url.utils import convert_to_pattern
+from models.url.helpers import convert_to_pattern
 
 def list_mode(processed_input):
     
@@ -79,11 +79,9 @@ if __name__ == "__main__":
         st.stop()
 
     if user_input.is_username:
-        st.write('Username mode active')
         processed_input = user_input.data
         processed_input = user_input.convert_to_url(processed_input)
     else:
-        st.write('URL mode active')
         if user_input.is_short_url:
             processed_input = user_input.data.replace('/detail', '')
         else:
