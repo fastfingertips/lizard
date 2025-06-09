@@ -3,6 +3,16 @@ import streamlit as st
 from letterboxdpy.user import User
 from letterboxdpy.movie import Movie
 
+
+def display_movie_poster(slug, poster_url, name, width=150):
+    """Display a movie poster with a link to its Letterboxd page."""
+    st.markdown(
+        f'<a href="https://letterboxd.com/film/{slug}/" target="_blank">'
+        f'<img src="{poster_url}" alt="{name}" width="{width}" style="cursor: pointer;" />'
+        f'</a>',
+        unsafe_allow_html=True
+    )
+
 def profile_page():
     st.title("Profile")
     
@@ -56,12 +66,7 @@ def profile_page():
             with cols[i % 4]:
                 try:
                     film = Movie(movie['slug'])
-                    st.markdown(
-                        f'<a href="https://letterboxd.com/film/{movie["slug"]}/" target="_blank">'
-                        f'<img src="{film.poster}" alt="{movie["name"]}" width="150" style="cursor: pointer;" />'
-                        f'</a>',
-                        unsafe_allow_html=True
-                    )
+                    display_movie_poster(movie['slug'], film.poster, movie['name'])
                 except Exception as e:
                     st.error(f"Error loading poster for {movie['name']}: {str(e)}")
                     st.image("https://via.placeholder.com/150", caption=movie['name'])
@@ -84,12 +89,7 @@ def profile_page():
             with cols[i]:
                 try:
                     recent_movie = Movie(film['slug'])
-                    st.markdown(
-                        f'<a href="https://letterboxd.com/film/{film["slug"]}/" target="_blank">'
-                        f'<img src="{recent_movie.poster}" alt="{film["name"]}" width="150" style="cursor: pointer;" />'
-                        f'</a>',
-                        unsafe_allow_html=True
-                    )
+                    display_movie_poster(film['slug'], recent_movie.poster, film['name'])
                 except Exception as e:
                     st.error(f"Error loading poster for {film['name']}: {str(e)}")
                     st.image("https://via.placeholder.com/150", caption=film['name'])
