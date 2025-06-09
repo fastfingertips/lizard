@@ -71,7 +71,7 @@ class MovieList(Url):
 
                     # MOVIE YEAR
                     try:
-                        movie_year = movie_headline_element.find('small').text
+                        movie_year = film_article.find('div', {'class': 'releaseyear'}).text.strip()
                     except:
                         movie_year = ''
                         print(f'Movie year could not be pulled. Check link: {movie_link}')

@@ -8,10 +8,10 @@ Selector: TypeAlias = Tuple[str, Dict[str, str]]
 @dataclass
 class FilmSelectors:
     """Selectors for film list elements"""
-    # <div class="viewing-list js-list-entries">
-    LIST: Selector = ('div', {'class': 'viewing-list js-list-entries'})
-    # <h2 class="headline-2 prettify">
-    HEADLINE: Selector = ('h2', {'class': 'headline-2 prettify'})
+    # <div class="list-detailed-entries-list js-list-entries">
+    LIST: Selector = ('div', {'class': 'js-list-entries'})
+    # <h2 class="primaryname">
+    HEADLINE: Selector = ('h2', {'class': 'primaryname'})
 
 @dataclass
 class MetaSelectors:
