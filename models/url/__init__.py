@@ -1,5 +1,5 @@
 from models.parser import DomParser
-from models.url.helpers import get_list_slug
+from letterboxdpy.utils.utils_url import get_list_slug
 
 from letterboxdpy.core.scraper import parse_url
 

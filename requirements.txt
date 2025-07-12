@@ -2,7 +2,6 @@ beautifulsoup4
 pandas
 requests
 streamlit
-validators
 stqdm
 typing_extensions
 letterboxdpy @ git+https://github.com/fastfingertips/letterboxdpy@main

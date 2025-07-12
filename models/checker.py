@@ -1,5 +1,5 @@
 from models.parser import DomParser
-from models.url.helpers import check_url_match
+from letterboxdpy.utils.utils_url import check_url_match
 from typing import Optional, TypedDict
 
 
