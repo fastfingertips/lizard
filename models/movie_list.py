@@ -71,10 +71,10 @@ class MovieList(Url):
 
                     # MOVIE YEAR
                     try:
-                        movie_year = film_article.find('div', {'class': 'releaseyear'}).text.strip()
+                        movie_year = film_article.find(*FilmSelectors.YEAR).text.strip()
                     except:
-                        movie_year = ''
-                        print(f'Movie year could not be pulled. Check link: {movie_link}')
+                        # Movie year could not be pulled. Check link: {movie_link}
+                         movie_year = ''
 
                     # ADD MOVIE TO MOVIES LIST
                     self._movies.append({
@@ -90,7 +90,7 @@ class MovieList(Url):
                     if self.last_page == current_page_index+1:
                         if int(100 / self.last_page) * self.last_page != 100:
                             current_percentage = 100
-            
+
                     my_bar.progress(current_percentage, text=progress_text)
             except Exception as e:
                 print(f'An error was encountered while obtaining movie information. Error: {e}')

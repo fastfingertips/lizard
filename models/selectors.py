@@ -10,8 +10,10 @@ class FilmSelectors:
     """Selectors for film list elements"""
     # <div class="list-detailed-entries-list js-list-entries">
     LIST: Selector = ('div', {'class': 'js-list-entries'})
-    # <h2 class="primaryname">
-    HEADLINE: Selector = ('h2', {'class': 'primaryname'})
+    # <h2 class="name -primary prettify"><a href="/film/aliens-vs-predator-requiem/">Aliens vs Predator: Requiem</a></h2>
+    HEADLINE: Selector = ('h2', {'class': 'name'})
+    # <span class="releasedate"><a href="/films/year/2007/">2007</a></span>
+    YEAR: Selector = ('span', {'class': 'releasedate'})
 
 @dataclass
 class MetaSelectors:
