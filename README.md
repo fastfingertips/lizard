@@ -10,6 +10,7 @@ https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907
 
 - [Usage](#usage)
 - [Local Installation](#local-installation)
+- [Documentation](#documentation)
 
 ### Usage
 
@@ -51,3 +52,12 @@ If you prefer to run the Letterboxd List Downloader locally, follow these steps:
     ```
 
 Now, you can access the Letterboxd List Downloader locally by opening your web browser and navigating to [http://localhost:8080](http://localhost:8080).
+
+### Documentation
+
+For comprehensive API references and documentation links used throughout the project, see [docs/references.md](docs/references.md). This includes:
+
+- Streamlit API references
+- Python standard library documentation
+- Third-party library documentation
+- Development tools and external services
