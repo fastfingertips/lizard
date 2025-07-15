@@ -7,6 +7,7 @@ from typing import Dict, Optional
 class PageConfig:
     page_title: str
     page_icon: str
+    layout: str
     initial_sidebar_state: str
     menu_items: Dict[str, str]
 
@@ -26,10 +27,15 @@ class Page:
         self._setup_styles()
 
     def _setup_page_config(self):
-        """Sets up page configuration"""
+        """
+        Sets up page configuration
+        
+        Reference: https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config
+        """
         config = PageConfig(
             page_title=self._page_title,
             page_icon='🎬',
+            layout='centered',
             initial_sidebar_state='collapsed',
             menu_items={
                 'Get Help': 'https://github.com/FastFingertips/lizard',
