@@ -4,7 +4,7 @@ from letterboxdpy.utils.utils_url import is_url, is_short_url
 
 
 class Input:
-    textbox_placeholder = 'Enter a list **url** or **username/list-title**.'
+    textbox_placeholder = 'Enter a **username**, list **url** or **username/list-title**.'
 
     def __init__(self):
         self.data = None

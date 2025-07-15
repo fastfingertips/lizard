@@ -1,5 +1,10 @@
 from core import requests, json
 
+""""
+notifier = Notifier()
+notifier.set_link_code("fastfingertips-lizard")
+notifier.send(f'List verified: {processed_input}')"
+"""
 
 class Notifier:
 
