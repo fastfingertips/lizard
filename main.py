@@ -12,24 +12,88 @@ from models.parser.utils import catch_error_message
 from models.url import Url
 from models.url.helpers import convert_to_pattern
 
+
+def display_movies_dataframe(movies_data):
+    st.dataframe(
+        pd.DataFrame(movies_data, columns=["Rank", "Year", "Title", "LetterboxdURI"]),
+        hide_index=True,
+        use_container_width=True,
+    )
+
+
+def create_movie_data(rank, title, year="", url=""):
+    return {
+        "Rank": rank,
+        "Year": year,
+        "Title": title,
+        "LetterboxdURI": url
+    }
+
+def watchlist_mode(user_instance, username):
+    try:
+        with st.spinner('Loading watchlist data...'):
+            watchlist_movies = user_instance.get_watchlist_movies()
+
+        if watchlist_movies:
+            movies_data = []
+            for rank, (_, movie_info) in enumerate(watchlist_movies.items(), 1):
+                movie_data = create_movie_data(
+                    rank=rank,
+                    title=movie_info.get('name', ''),
+                    year="",
+                    url=movie_info.get('url', f"https://letterboxd.com/film/{movie_info.get('slug', '')}/")
+                )
+                movies_data.append(movie_data)
+
+            display_movies_dataframe(movies_data)
+        else:
+            if hasattr(user_instance, 'watchlist_length') and user_instance.watchlist_length == 0:
+                st.info(f"**{username}**'s watchlist is empty.")
+            else:
+                st.info(f"**{username}**'s watchlist is not accessible or private.")
+
+    except Exception as e:
+        st.error(f"Error loading watchlist: {str(e)}")
+
+
 def username_mode(username):
-    """Handle username input - show user's lists and allow selection"""
     try:
         user_instance = User(username)
         user_lists = user_instance.get_lists()
+
+        # Display user instance data
+        user_details = {}
+        for key, value in user_instance.__dict__.items():
+            user_details[key] = '🚫' if 'dom' in key else value
+        st.json(user_details, expanded=False)
+
     except Exception:
-        st.error(f"User '{username}' not found.")
+        st.error(f"User '[{username}](https://letterboxd.com/{username}/)' not found.")
         st.stop()
 
-    # Display user lists
-    if user_lists and 'lists' in user_lists and user_lists['lists']:
-        st.success(f"Found {user_lists['count']} lists for **{username}**")
+    list_options = {}
+    has_watchlist = False
+    has_regular_lists = False
+    is_hq_user = user_instance.is_hq
 
-        # Create list options for selectbox
-        list_options = {}
+    if not is_hq_user and user_instance.watchlist_length and user_instance.watchlist_length > 0:
+        watchlist_url = f"https://letterboxd.com/{username}/watchlist/"
+        list_options[f"Watchlist ({user_instance.watchlist_length} movies)"] = watchlist_url
+        has_watchlist = True
+
+    if user_lists and 'lists' in user_lists and user_lists['lists']:
         for _, list_data in user_lists['lists'].items():
             display_name = f"{list_data['title']} ({list_data['count']} movies)"
             list_options[display_name] = list_data['url']
+            has_regular_lists = True
+
+    if list_options:
+        if has_watchlist and not has_regular_lists:
+            st.info(f"**[{username}](https://letterboxd.com/{username}/)** has only a watchlist (no public lists).")
+        elif is_hq_user and has_regular_lists:
+            st.info(f"**[{username}](https://letterboxd.com/{username}/)** is an HQ user (no watchlist available).")
+        elif not is_hq_user and has_regular_lists and not has_watchlist:
+            st.info(f"**[{username}](https://letterboxd.com/{username}/)** has public lists. Watchlist might be private or empty.")
 
         selected_list = st.selectbox(
             "Select a list:",
@@ -37,36 +101,18 @@ def username_mode(username):
             index=0
         )
 
-        # Show selected list details and movies
         if selected_list and selected_list != "Choose a list...":
             selected_url = list_options[selected_list]
-
-            # Find selected list data
-            selected_list_data = None
-            for list_data in user_lists['lists'].values():
-                if list_data['url'] == selected_url:
-                    selected_list_data = list_data
-                    break
-
-            if selected_list_data:
-                # Show compact list details in one line
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Movies", selected_list_data['count'])
-                with col2:
-                    st.metric("Likes", selected_list_data['likes'])
-                with col3:
-                    st.metric("Comments", selected_list_data['comments'])
-
-                # Show description if available (compact)
-                if selected_list_data.get('description'):
-                    with st.expander("Description"):
-                        st.write(selected_list_data['description'])
-
-            # Show movies directly below
-            list_mode(selected_url)
+            if '/watchlist/' in selected_url:
+                watchlist_mode(user_instance, username)
+            else:
+                list_mode(selected_url)
     else:
-        st.write(f"User '{username}' has no lists.")
+        st.info(f"**[{username}](https://letterboxd.com/{username}/)** has no public lists.")
+        if is_hq_user:
+            st.info("HQ users do not have watchlists.")
+        else:
+            st.info("The user's watchlist might be private or empty.")
 
 
 def list_mode(processed_input):
@@ -80,16 +126,13 @@ def list_mode(processed_input):
     if err_msg:
         st.error(f'{err_msg}', icon='👀')
         if not is_list:
-            st.warning(f'The address is not a Letterboxd list.', icon='💡')
+            st.warning('The address is not a Letterboxd list.', icon='💡')
             st.warning('Please enter a valid **username**, **list url** or **username/list-title.**', icon='💡')
         st.stop()
 
-    button = st.button('Get again.')
+    st.button('Get again.')
 
-    # create checker object for list
     list_meta = checker.get_list_meta(processed_input)
-
-    # address is list, so we can create the object now
     movie_list = MovieList(
         Url(
             list_meta['url'],
@@ -100,19 +143,10 @@ def list_mode(processed_input):
     list_details = {}
     for key, value in movie_list.__dict__.items():
         list_details[key] = '🚫' if 'dom' in key else value
-    json_info = st.json(list_details, expanded=False)
-    # since this process may take a long time, we print the list information
-    # ... on the screen before. this way we can see which list is downloaded.
+    st.json(list_details, expanded=False)
 
     if list_meta['is_available']:
-        st.dataframe(
-            pd.DataFrame(
-                movie_list.movies,
-                columns=["Rank", "Year", "Title", "LetterboxdURI"]
-            ),
-            hide_index=True,
-            use_container_width=True,
-        )
+        display_movies_dataframe(movie_list.movies)
     else:
         st.warning('List is not available.')
 
