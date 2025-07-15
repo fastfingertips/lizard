@@ -1,5 +1,4 @@
 from core import st
-import streamlit as st
 from letterboxdpy.user import User
 from letterboxdpy.movie import Movie
 

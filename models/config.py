@@ -49,16 +49,17 @@ class Page:
 
     def _setup_background(self):
         """Sets up background configuration"""
+
         background = BackgroundConfig(
             dark="""
             <style>
                 .stApp {
                     background-image: linear-gradient(
-                        180deg, 
-                        #20272e, 
-                        14%, 
-                        #14181c, 
-                        #14181c, 
+                        180deg,
+                        #20272e,
+                        14%,
+                        #14181c,
+                        #14181c,
                         #14181c
                     );
                 }
