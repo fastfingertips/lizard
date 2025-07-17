@@ -1,4 +1,6 @@
-from core import st, time, stqdm
+import time
+import streamlit as st
+from stqdm import stqdm
 
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.constants.project import DOMAIN

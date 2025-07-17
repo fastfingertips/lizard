@@ -1,4 +1,4 @@
-from core import st
+import streamlit as st
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.user import User
 

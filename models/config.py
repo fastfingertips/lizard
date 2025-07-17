@@ -1,4 +1,5 @@
-from core import os, st
+import os
+import streamlit as st
 from dataclasses import dataclass
 from typing import Dict, Optional
 

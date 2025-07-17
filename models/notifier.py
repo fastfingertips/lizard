@@ -1,4 +1,5 @@
-from core import requests, json
+import json
+import requests
 
 """"
 notifier = Notifier()

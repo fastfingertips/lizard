@@ -1,4 +1,4 @@
-from core import st
+import streamlit as st
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.utils.utils_url import is_url, is_short_url
 

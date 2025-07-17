@@ -1,4 +1,5 @@
-from core import pd, st
+import pandas as pd
+import streamlit as st
 from constants import LIST_COLUMNS
 
 
