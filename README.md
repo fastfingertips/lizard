@@ -1,6 +1,6 @@
-## Letterboxd List Downloader
+## Lizard - Letterboxd Data Processor
 
-This project provides a [web-based](https://lizard.streamlit.app/) tool for downloading user lists from Letterboxd[*](https://letterboxd.com/about).
+This project provides a [web-based](https://lizard.streamlit.app/) tool for downloading and processing Letterboxd data including user lists and watchlists from Letterboxd[*](https://letterboxd.com/about).
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.12.10-blue)](https://www.python.org) [![Streamlit](https://img.shields.io/badge/Streamlit-1.30.0-green)](https://streamlit.io)
 
@@ -14,14 +14,22 @@ https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907
 
 ### Usage
 
+**For User Lists:**
 1. Enter the `username/list-name` or the direct `list URL` into the textbox on the main page or use the `'q'` argument as a URL parameter.
-   - Examples for user and list:
+   - Examples for user lists:
      - [`fastfingertips/list_name`](https://lizard.streamlit.app/?q=fastfingertips/list_name)
      - [`fastfingertips/list/list_name`](https://lizard.streamlit.app/?q=fastfingertips/list/list_name)
      - _with filter_:
        - [`fastfingertips/list_name/genre/crime`](https://lizard.streamlit.app/?q=fastfingertips/list_name/genre/crime)
        - [`fastfingertips/list/list_name/genre/crime`](https://lizard.streamlit.app/?q=fastfingertips/list/list_name/genre/crime)
-   - Examples for user list URLs (http or https):
+
+**For Watchlists:**
+1. Enter just the `username` to access their watchlist data.
+   - Example for watchlists:
+     - [`fastfingertips`](https://lizard.streamlit.app/?q=fastfingertips) (username only)
+
+**For User List URLs (http or https):**
+   - Examples:
      - [`https://letterboxd.com/fastfingertips/list/list_name`](https://lizard.streamlit.app/?q=https://letterboxd.com/fastfingertips/list/list_name)
      - [`https://boxd.it/rSrSc`](https://lizard.streamlit.app/?q=https://boxd.it/rSrSc)
      - _with filter_:
@@ -32,18 +40,23 @@ https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907
 0. If the list is verified, detailed information about the list will be presented.
 
 ### Local Installation
-You can use the Letterboxd List Downloader without installing anything on your local machine by visiting the [web application](https://lizard.streamlit.app/).
+You can use Lizard without installing anything on your local machine by visiting the [web application](https://lizard.streamlit.app/).
 
-If you prefer to run the Letterboxd List Downloader locally, follow these steps:
+If you prefer to run Lizard locally, follow these steps:
 
 1. **Clone the Repository:**
     ```bash
     git clone https://github.com/FastFingertips/lizard.git
+    cd lizard
     ```
 
 2. **Install Dependencies:**
     ```bash
+    # Option 1: Using pip with requirements.txt
     pip install -r requirements.txt
+
+    # Option 2: Using modern pyproject.toml (recommended)
+    pip install -e .
     ```
 
 3. **Run the Application:**
