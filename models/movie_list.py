@@ -4,7 +4,7 @@ from stqdm import stqdm
 
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content, get_movie_count_from_meta
+from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content, get_movie_count_from_meta, get_list_last_page
 from models.selectors import FilmSelectors
 from models.url import Url
 
@@ -17,7 +17,7 @@ class MovieList(Url):
         self.title = self.get_list_title()
         self.owner = self.get_list_owner()
         self._movies = [] 
-        self.last_page = self.detail_dom_parser.get_list_last_page()
+        self.last_page = get_list_last_page(self.detail_url_dom)
         self.movie_count = get_movie_count_from_meta(self.url_dom)
 
     def get_movies(self, caching = False) -> list:
