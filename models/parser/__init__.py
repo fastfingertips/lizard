@@ -1,23 +1,11 @@
-from models.selectors import MetaSelectors, PageSelectors
+from models.selectors import PageSelectors
 from letterboxdpy.constants.project import DOMAIN_SHORT
+from letterboxdpy.utils.utils_parser import get_meta_content
 
 class DomParser:
 
     def __init__(self, dom):
         self.dom = dom
-
-    def get_meta_content(self, _obj) -> str:
-        """
-        a function that returns the content of the meta tag..
-        """
-        try:
-            #> get the content of the meta tag.
-            metaContent = self.dom.find('meta', property=_obj).attrs['content']
-        except AttributeError:
-            #> if the meta tag is not found, return an empty string.
-            print(f"Cannot retrieve '{_obj}' from the meta tag. Error Message: {AttributeError}")
-            metaContent = None
-        return metaContent
 
     def get_body_content(self, _obj) -> str:
         """
@@ -34,41 +22,8 @@ class DomParser:
 
         movie_count = default
 
-        """
-        1. OLD CODE:
-
-        metaDescription = metaDescription[10:] # after 'A list of' in the description
-
-        for i in range(6):
-            try:
-                int(metaDescription[i])
-                ii = i+1
-            except: pass
-        movie_count = metaDescription[:ii]
-        return movie_count
-        """
-
-        """
-        2. OLD CODE:
-
-        for i, char in enumerate(meta_description):
-            char_list.append(char.isdigit())
-
-            if char.isdigit():
-                end = i + meta_description[i:].find(' ')
-                movie_count_str = meta_description[i:end]
-                
-                break
-
-        for char in movie_count_str:
-            if not char.isdigit():
-                movie_count_str = movie_count_str.replace(char, '')
-
-        movie_count = int(movie_count_str)
-        """
-
         try:
-            meta_description = self.dom.find(*MetaSelectors.DESCRIPTION).attrs['content'] 
+            meta_description = get_meta_content(self.dom, name='description')
 
             for item in meta_description.split(' '):
                 if item[0].isdigit():
@@ -77,7 +32,7 @@ class DomParser:
                         if not char.isdigit():
                             movie_count = movie_count.replace(char, '')
                     break
-                            
+
             movie_count = int(movie_count)
             if movie_count is not None:
                 # print(f"Found the movie count in the meta description as {movie_count}.")

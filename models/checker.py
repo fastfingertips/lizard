@@ -1,5 +1,6 @@
 from models.parser import DomParser
 from letterboxdpy.utils.utils_url import check_url_match
+from letterboxdpy.utils.utils_parser import get_meta_content
 from typing import Optional, TypedDict
 
 
@@ -30,12 +31,12 @@ class Checker:
     def is_list(self) -> bool:
         """
         Checks if the current page is a valid Letterboxd list.
-        
+
         Returns:
             bool: True if the page is a valid list, False otherwise
         """
         try:
-            meta_content = self.dom_parser.get_meta_content('og:type')
+            meta_content = get_meta_content(self.dom, property='og:type')
             return meta_content == 'letterboxd:list'
         except Exception as e:
             print(f"Error checking list type: {e}")
@@ -61,8 +62,8 @@ class Checker:
 
         try:
             # Extract basic metadata
-            list_url = self.dom_parser.get_meta_content('og:url')
-            list_title = self.dom_parser.get_meta_content('og:title')
+            list_url = get_meta_content(self.dom, property='og:url')
+            list_title = get_meta_content(self.dom, property='og:title')
             list_owner = self.dom_parser.get_body_content('data-owner')
 
             # Check for URL redirection
