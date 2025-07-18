@@ -1,41 +1,10 @@
 from models.selectors import PageSelectors
 from letterboxdpy.constants.project import DOMAIN_SHORT
-from letterboxdpy.utils.utils_parser import get_meta_content
 
 class DomParser:
 
     def __init__(self, dom):
         self.dom = dom
-
-    def get_movie_count_from_meta(self, default=None) -> int:
-        # Instead of making a GET request to the last page to retrieve the number of movies,
-        # which could slow down the program, an alternative approach is employed.
-        # The meta description of the list page is retrieved to obtain the count of movies.
-
-        movie_count = default
-
-        try:
-            meta_description = get_meta_content(self.dom, name='description')
-
-            for item in meta_description.split(' '):
-                if item[0].isdigit():
-                    movie_count = item
-                    for char in item:
-                        if not char.isdigit():
-                            movie_count = movie_count.replace(char, '')
-                    break
-
-            movie_count = int(movie_count)
-            if movie_count is not None:
-                # print(f"Found the movie count in the meta description as {movie_count}.")
-                return int(movie_count)
-            else:
-                # handle the case where no digit is found in the meta description
-                print("Error: No digit found in the meta description.")
-                return None
-        except (AttributeError, TypeError) as e:
-            print(f"Error while getting movie count from meta: {e}")
-            return default
 
     def get_list_last_page(self, default=None) -> int:
         """
