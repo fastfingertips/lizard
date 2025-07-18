@@ -4,7 +4,7 @@ from stqdm import stqdm
 
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_parser import get_meta_content
+from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content
 from models.selectors import FilmSelectors
 from models.url import Url
 
@@ -135,5 +135,5 @@ class MovieList(Url):
         return list_title
 
     def get_list_owner(self) -> str:
-        list_owner = self.dom_parser.get_body_content('data-owner')
+        list_owner = get_body_content(self.url_dom, 'data-owner')
         return list_owner

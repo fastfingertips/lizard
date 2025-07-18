@@ -7,14 +7,6 @@ class DomParser:
     def __init__(self, dom):
         self.dom = dom
 
-    def get_body_content(self, _obj) -> str:
-        """
-        a function that returns the content of the body tag..
-        """
-        #> get the content of the body tag.
-        bodyContent = self.dom.find('body').attrs[_obj]
-        return bodyContent
-
     def get_movie_count_from_meta(self, default=None) -> int:
         # Instead of making a GET request to the last page to retrieve the number of movies,
         # which could slow down the program, an alternative approach is employed.

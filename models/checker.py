@@ -1,6 +1,6 @@
 from models.parser import DomParser
 from letterboxdpy.utils.utils_url import check_url_match
-from letterboxdpy.utils.utils_parser import get_meta_content
+from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content
 from typing import Optional, TypedDict
 
 
@@ -64,7 +64,7 @@ class Checker:
             # Extract basic metadata
             list_url = get_meta_content(self.dom, property='og:url')
             list_title = get_meta_content(self.dom, property='og:title')
-            list_owner = self.dom_parser.get_body_content('data-owner')
+            list_owner = get_body_content(self.dom, 'data-owner')
 
             # Check for URL redirection
             if not check_url_match(url, list_url):
