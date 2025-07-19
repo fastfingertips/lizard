@@ -1,4 +1,3 @@
-from models.parser import DomParser
 from letterboxdpy.utils.utils_url import check_url_match
 from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content
 from typing import Optional, TypedDict
@@ -21,12 +20,11 @@ class Checker:
     def __init__(self, dom):
         """
         Initialize the Checker with a DOM object.
-        
+
         Args:
             dom: The BeautifulSoup DOM object to check
         """
         self.dom = dom
-        self.dom_parser = DomParser(dom)
 
     def is_list(self) -> bool:
         """

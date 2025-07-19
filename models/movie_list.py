@@ -4,7 +4,7 @@ from stqdm import stqdm
 
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content, get_movie_count_from_meta, get_list_last_page
+from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content, get_movie_count_from_meta, get_list_last_page, get_list_short_url
 from models.selectors import FilmSelectors
 from models.url import Url
 
@@ -111,7 +111,7 @@ class MovieList(Url):
         if self._short_url:
             return self._short_url
         else:
-            self._short_url = self.dom_parser.get_list_short_url()
+            self._short_url = get_list_short_url(self.detail_url_dom)
             return self._short_url
 
     @property
