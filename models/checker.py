@@ -33,27 +33,11 @@ class Checker:
         """
         self.dom = dom
 
-    def is_list(self) -> bool:
-        """
-        Checks if the current page is a valid Letterboxd list.
-
-        Returns:
-            bool: True if the page is a valid list, False otherwise
-        """
-        try:
-            meta_content = get_meta_content(self.dom, property='og:type')
-            return meta_content == 'letterboxd:list'
-        except Exception as e:
-            print(f"Error checking list type: {e}")
-            return False
-    
     def get_list_meta(self, url: str) -> ListMetaData:
         """
         Extracts metadata from a Letterboxd list page.
-        
         Args:
             url: The original URL of the list
-            
         Returns:
             ListMetaData: A dictionary containing list metadata and status
         """

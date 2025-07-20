@@ -1,6 +1,7 @@
 import streamlit as st
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.user import User
+from letterboxdpy.utils.utils_parser import is_list
 
 from models.checker import Checker
 from models.config import Page
@@ -104,7 +105,7 @@ def list_mode(processed_input):
     err_msg = catch_error_message(url_dom)
 
     checker = Checker(url_dom)
-    is_list = checker.is_list()
+    is_list_result = is_list(url_dom)
 
     if err_msg:
         st.error(f'{err_msg}', icon='👀')
