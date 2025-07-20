@@ -1,12 +1,11 @@
 import streamlit as st
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.user import User
-from letterboxdpy.utils.utils_parser import is_list
+from letterboxdpy.utils.utils_parser import is_list, catch_error_message
 from letterboxdpy.pages.user_list import extract_list_meta
 from models.config import Page
 from models.manager import Input
 from models.movie_list import MovieList
-from utils.parser import catch_error_message
 from models.url import Url
 from constants import WATCHLIST_COLUMNS, LIST_COLUMNS
 from utils.display import display_movies_dataframe, display_object_details

@@ -12,7 +12,7 @@ from stqdm import stqdm
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content, get_movie_count_from_meta, get_list_last_page, get_list_short_url
-from models.selectors import FilmSelectors
+from letterboxdpy.constants.selectors import FilmSelectors
 from models.url import Url
 
 
