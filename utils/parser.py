@@ -1,7 +1,7 @@
 from typing import Union
 
-
 from models.selectors import PageSelectors
+
 
 def catch_error_message(dom) -> Union[bool, str]:
     """

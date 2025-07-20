@@ -6,9 +6,8 @@ from models.checker import Checker
 from models.config import Page
 from models.manager import Input
 from models.movie_list import MovieList
-from models.parser.utils import catch_error_message
+from utils.parser import catch_error_message
 from models.url import Url
-from models.url.helpers import convert_to_pattern
 from constants import WATCHLIST_COLUMNS, LIST_COLUMNS
 from utils.display import display_movies_dataframe
 from utils.data import create_movie_data
@@ -153,7 +152,7 @@ if __name__ == "__main__":
         if user_input.is_short_url:
             processed_input = user_input.data.replace('/detail', '')
         else:
-            processed_input = convert_to_pattern(user_input.data)
+            processed_input = Url.convert_to_pattern(user_input.data)
             processed_input = user_input.convert_to_url(processed_input)
         list_mode(processed_input)
 
