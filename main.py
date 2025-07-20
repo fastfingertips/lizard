@@ -9,7 +9,7 @@ from models.movie_list import MovieList
 from utils.parser import catch_error_message
 from models.url import Url
 from constants import WATCHLIST_COLUMNS, LIST_COLUMNS
-from utils.display import display_movies_dataframe
+from utils.display import display_movies_dataframe, display_object_details
 from utils.data import create_movie_data
 
 
@@ -45,10 +45,7 @@ def username_mode(username):
         user_lists = user_instance.get_lists()
 
         # Display user instance data
-        user_details = {}
-        for key, value in user_instance.__dict__.items():
-            user_details[key] = '🚫' if 'dom' in key else value
-        st.json(user_details, expanded=False)
+        display_object_details(user_instance, "User Details")
 
     except Exception:
         st.error(f"User '[{username}](https://letterboxd.com/{username}/)' not found.")
@@ -122,10 +119,8 @@ def list_mode(processed_input):
         )
     )
 
-    list_details = {}
-    for key, value in movie_list.__dict__.items():
-        list_details[key] = '🚫' if 'dom' in key else value
-    st.json(list_details, expanded=False)
+    # Display list instance data
+    display_object_details(movie_list, "List Details")
 
     if list_meta['is_available']:
         display_movies_dataframe(movie_list.movies, columns=LIST_COLUMNS)

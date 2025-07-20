@@ -28,3 +28,23 @@ def display_movies_dataframe(movies_data, columns=None):
         hide_index=True,
         use_container_width=True,
     )
+
+
+def display_object_details(obj, title=None):
+    """
+    Display object details with sensitive data filtered out.
+
+    Args:
+        obj: Object to display
+        title: Optional title for the section
+    """
+    if title:
+        st.subheader(title)
+
+    # Filter out sensitive attributes
+    details = {}
+    for key, value in obj.__dict__.items():
+        if 'dom' not in key.lower() and not key.startswith('_'):
+            details[key] = value
+
+    st.json(details, expanded=False)
