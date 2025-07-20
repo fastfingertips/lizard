@@ -2,8 +2,7 @@ import streamlit as st
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.user import User
 from letterboxdpy.utils.utils_parser import is_list
-
-from models.checker import Checker
+from letterboxdpy.pages.user_list import extract_list_meta
 from models.config import Page
 from models.manager import Input
 from models.movie_list import MovieList
@@ -104,7 +103,6 @@ def list_mode(processed_input):
     url_dom = parse_url(processed_input)
     err_msg = catch_error_message(url_dom)
 
-    checker = Checker(url_dom)
     is_list_result = is_list(url_dom)
 
     if err_msg:
@@ -116,7 +114,7 @@ def list_mode(processed_input):
 
     st.button('Get again.')
 
-    list_meta = checker.get_list_meta(processed_input)
+    list_meta = extract_list_meta(url_dom, processed_input)
     movie_list = MovieList(
         Url(
             list_meta['url'],
