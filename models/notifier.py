@@ -1,11 +1,12 @@
+"""
+External notification service integration.
+
+Provides push notifications via ntfy.sh service for monitoring
+application usage and list processing events.
+"""
+
 import json
 import requests
-
-""""
-notifier = Notifier()
-notifier.set_link_code("fastfingertips-lizard")
-notifier.send(f'List verified: {processed_input}')"
-"""
 
 class Notifier:
 

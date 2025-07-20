@@ -1,3 +1,10 @@
+"""
+Streamlit page configuration and styling.
+
+Manages page settings, background themes, and custom CSS styles
+for the Letterboxd List Downloader application.
+"""
+
 import os
 import streamlit as st
 from dataclasses import dataclass

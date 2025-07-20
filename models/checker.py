@@ -1,3 +1,10 @@
+"""
+Letterboxd list validation and metadata extraction.
+
+Validates if a page is a valid Letterboxd list and extracts metadata
+like title, owner, and availability status.
+"""
+
 from letterboxdpy.utils.utils_url import check_url_match
 from letterboxdpy.utils.utils_parser import get_meta_content, get_body_content
 from typing import Optional, TypedDict

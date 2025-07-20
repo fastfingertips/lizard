@@ -1,3 +1,10 @@
+"""
+CSS and HTML selectors for web scraping.
+
+Defines BeautifulSoup selectors used to extract data from
+Letterboxd pages including films, metadata, and error messages.
+"""
+
 from dataclasses import dataclass
 from typing import Dict, Tuple
 from typing_extensions import TypeAlias

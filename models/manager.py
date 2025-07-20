@@ -1,3 +1,10 @@
+"""
+User input processing and validation.
+
+Handles different types of user input (usernames, URLs, patterns) and
+provides validation, type detection, and URL conversion utilities.
+"""
+
 import streamlit as st
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.utils.utils_url import is_url, is_short_url

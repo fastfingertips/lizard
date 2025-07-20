@@ -1,3 +1,10 @@
+"""
+Letterboxd movie list data extraction and processing.
+
+Extends the Url class to extract movie data from Letterboxd lists,
+including titles, years, rankings, and metadata with pagination support.
+"""
+
 import time
 import streamlit as st
 from stqdm import stqdm
