@@ -3,7 +3,7 @@ import streamlit as st
 from constants import LIST_COLUMNS
 
 
-def display_movies_dataframe(movies_data, columns=None):
+def movies_dataframe(movies_data, columns=None):
     """
     Display movies data as a dataframe with specified columns.
     
@@ -30,7 +30,7 @@ def display_movies_dataframe(movies_data, columns=None):
     )
 
 
-def display_object_details(obj, title=None):
+def object_details(obj, title=None):
     """
     Display object details with sensitive data filtered out.
 

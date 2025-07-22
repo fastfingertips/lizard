@@ -6,8 +6,10 @@ provides validation, type detection, and URL conversion utilities.
 """
 
 import streamlit as st
+import re
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_url import is_url, is_short_url
+from letterboxdpy.utils.utils_url import is_short_url, parse_list_url
+from letterboxdpy.utils.utils_validators import is_url
 
 
 class Input:
@@ -86,78 +88,89 @@ class Input:
             `fastfingertips/list/list_name/decade/1990s/genre/crime+-comedy/by/popular`
             `fastfingertips/list/list_name/detail/decade/1990s/genre/crime+-comedy/by/popular`
 
-        extras: 
+        extras:
             checks the / sign at the end and beginning of the data.
         """
-        if '/' in data:
 
-            # 1. remove '/' from start and end of string
+        def clean_slashes(data):
+            """Remove leading and trailing slashes"""
             if len(data) <= 2:
                 st.error('Data is too short.')
                 return None
+            if data[0] == '/':
+                data = data[1:]
+            if data[-1] == '/':
+                data = data[:-1]
+            return data
 
-            if data[0] == '/': data = data[1:]
-            if data[-1] == '/': data = data[:-1]
-                
-            # 2. split data by '/'
+        def parse_data_blocks(data):
+            """Split data and extract username"""
             if '/' not in data:
-                # > Data does not contain a '/' character.
-                return None
+                return None, None
 
             data_blocks = data.split('/')
             username = data_blocks[0]
-            data_blocks = data_blocks[1:] 
+            remaining_blocks = data_blocks[1:]
+            return username, remaining_blocks
 
+        def extract_list_slug(data_blocks):
+            """Extract list slug from data blocks with complex logic"""
             if len(data_blocks) == 1:
-                list_slug = data_blocks[0]
-                data_blocks.clear()
-            else:
-                if data_blocks[0] == 'list':
+                return data_blocks[0], []
 
-                    if data_blocks[1] == 'list':
-                        list_slug = data_blocks[1]
-                        data_blocks = data_blocks[2:]
-                        if data_blocks:
-                            if data_blocks[0] == 'detail':
-                                # /list/list/detail
-                                data_blocks = data_blocks[1:]
-
-                    elif data_blocks[1] == 'detail':
-                        list_slug = data_blocks[1]
-                        data_blocks = data_blocks[2:]
-                        if data_blocks:
-                            if data_blocks[0] == 'detail':
-                                # /list/detail/detail
-                                data_blocks = data_blocks[1:]
-
-                    else:
-                        # list/list_name
-                        list_slug = data_blocks[1]
-                        data_blocks = data_blocks[2:]
-                        if data_blocks:
-                            # list/list_name/?
-                            if data_blocks[0] == 'detail':
-                                # list/list_name/detail
-                                data_blocks = data_blocks[1:]
-
-                elif data_blocks[0] == 'detail':
-                    if data_blocks[1] == 'detail':
-                        list_slug = data_blocks[0]
-                        data_blocks = data_blocks[2:]
-                    else:
-                        list_slug = data_blocks[0]
-                        data_blocks = data_blocks[1:]
-                        pass
+            def handle_list_keyword():
+                """Handle when first block is 'list'"""
+                if data_blocks[1] == 'list':
+                    list_slug = data_blocks[1]
+                    remaining = data_blocks[2:]
+                    if remaining and remaining[0] == 'detail':
+                        remaining = remaining[1:]
+                    return list_slug, remaining
+                elif data_blocks[1] == 'detail':
+                    list_slug = data_blocks[1]
+                    remaining = data_blocks[2:]
+                    if remaining and remaining[0] == 'detail':
+                        remaining = remaining[1:]
+                    return list_slug, remaining
                 else:
-                    list_slug = data_blocks[0]
-                    data_blocks = data_blocks[1:]
-                    pass
+                    list_slug = data_blocks[1]
+                    remaining = data_blocks[2:]
+                    if remaining and remaining[0] == 'detail':
+                        remaining = remaining[1:]
+                    return list_slug, remaining
+
+            def handle_detail_keyword():
+                """Handle when first block is 'detail'"""
+                if data_blocks[1] == 'detail':
+                    return data_blocks[0], data_blocks[2:]
+                else:
+                    return data_blocks[0], data_blocks[1:]
+
+            if data_blocks[0] == 'list':
+                return handle_list_keyword()
+            elif data_blocks[0] == 'detail':
+                return handle_detail_keyword()
+            else:
+                return data_blocks[0], data_blocks[1:]
+
+        if '/' in data:
+            # Clean and parse input data
+            cleaned_data = clean_slashes(data)
+            if not cleaned_data:
+                return None
+
+            username, data_blocks = parse_data_blocks(cleaned_data)
+            if not username or not data_blocks:
+                return None
+
+            # Extract list slug using nested function
+            list_slug, remaining_blocks = extract_list_slug(data_blocks)
 
             try:
                 if all([username, list_slug]):
                     filters = ''
-                    if data_blocks:
-                        filters = '/'.join(data_blocks)
+                    if remaining_blocks:
+                        filters = '/'.join(remaining_blocks)
                     return f'{DOMAIN}/{username}/list/{list_slug}/' + filters
                 else:
                     st.error('Username or list title is empty.')
@@ -169,3 +182,25 @@ class Input:
             return f'{DOMAIN}/{data}/'
 
         return None
+
+    @staticmethod
+    def parse_letterboxd_url(url: str) -> dict:
+        """Parse Letterboxd URL and extract components"""
+        if '/watchlist' in url:
+            pattern = r'letterboxd\.com/([^/]+)/watchlist'
+            match = re.search(pattern, url)
+            if match:
+                return {
+                    'username': match.group(1),
+                    'slug': 'watchlist',
+                    'type': 'watchlist'
+                }
+            raise ValueError(f"Invalid watchlist URL format: {url}")
+        elif '/list/' in url:
+            username, slug = parse_list_url(url)
+            return {
+                'username': username,
+                'slug': slug,
+                'type': 'user_list'
+            }
+        raise ValueError(f"Unsupported URL type: {url}")

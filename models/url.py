@@ -19,7 +19,11 @@ class Url():
         self.page_url = self.detail_url + 'page/'
         self._url_dom = url_dom
         self._detail_url_dom = None
-        self.slug = get_list_slug(self.url)
+        # Only extract slug for list URLs, not watchlist URLs
+        if '/list/' in url:
+            self.slug = get_list_slug(self.url)
+        else:
+            self.slug = None
 
     @property
     def url_dom(self):

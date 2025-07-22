@@ -1,5 +1,5 @@
 # Column definitions for different data types
-LIST_COLUMNS = ['Rank', 'Year', 'Title', 'LetterboxdURI']
+LIST_COLUMNS = ['Rank', 'Title', 'LetterboxdURI']
 WATCHLIST_COLUMNS = ['Rank', 'Title', 'LetterboxdURI']
 
 # Letterboxd official import format column mappings
