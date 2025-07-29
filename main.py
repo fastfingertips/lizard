@@ -43,7 +43,7 @@ def watchlist_mode(user_instance, username):
     try:
         watchlist = create_watchlist(username)
         # Display watchlist details first, before loading movies
-        display.object_details(watchlist, "Watchlist Details")
+        display.object_details(watchlist)
         
         # Then load and display movies
         movies = load_movies(watchlist)
@@ -56,7 +56,7 @@ def username_mode(username):
     try:
         user_instance = User(username)
         user_lists = user_instance.get_lists()
-        display.object_details(user_instance, "User Details")
+        display.object_details(user_instance)
     except Exception:
         messages.user_not_found(username)
         st.stop()
@@ -149,7 +149,7 @@ def list_mode(processed_input):
 
     def display_content(user_list, list_meta):
         """Display list details and movies if available"""
-        display.object_details(user_list, "List Details")
+        display.object_details(user_list)
 
         if list_meta['is_available']:
             display.movies_dataframe(user_list.movies, columns=LIST_COLUMNS)
