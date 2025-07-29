@@ -5,7 +5,8 @@ from letterboxdpy.utils.utils_parser import is_list
 from letterboxdpy.pages.user_list import extract_list_meta
 from models.config import Page
 from models.manager import Input
-from models.movie_list import WatchList, UserList
+from models.watchlist import WatchList
+from models.userlist import UserList
 from models.url import Url
 from constants import WATCHLIST_COLUMNS, LIST_COLUMNS
 from utils import display, messages
@@ -24,9 +25,10 @@ def watchlist_mode(user_instance, username):
         with st.spinner('Loading watchlist data...'):
             return watchlist.movies
 
-    def display_result(movies, user_instance, username):
+    def display_movies(movies, user_instance, username):
         """Display watchlist movies or appropriate message"""
         if movies and len(movies) > 0:
+            # Display movies
             display.movies_dataframe(movies, columns=WATCHLIST_COLUMNS)
         else:
             if hasattr(user_instance, 'watchlist_length') and user_instance.watchlist_length == 0:
@@ -40,8 +42,12 @@ def watchlist_mode(user_instance, username):
 
     try:
         watchlist = create_watchlist(username)
+        # Display watchlist details first, before loading movies
+        display.object_details(watchlist, "Watchlist Details")
+        
+        # Then load and display movies
         movies = load_movies(watchlist)
-        display_result(movies, user_instance, username)
+        display_movies(movies, user_instance, username)
     except Exception as e:
         handle_error(e)
 
