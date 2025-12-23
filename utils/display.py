@@ -51,4 +51,5 @@ def object_details(obj, title=None):
             if 'dom' not in key.lower() and not key.startswith('_'):
                 details[key] = value
 
-    st.json(details, expanded=False)
+    with st.expander(title or "Details", expanded=False):
+        st.json(details, expanded=True)
