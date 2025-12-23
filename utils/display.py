@@ -26,7 +26,7 @@ def movies_dataframe(movies_data, columns=None):
     st.dataframe(
         df,
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
 
