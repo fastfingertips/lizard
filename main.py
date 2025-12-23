@@ -9,7 +9,7 @@ from models.watchlist import WatchList
 from models.userlist import UserList
 from models.url import Url
 from constants import WATCHLIST_COLUMNS, LIST_COLUMNS
-from utils import display, messages
+from widgets import selectors, display, messages
 
 
 def watchlist_mode(user_instance, username):
@@ -28,8 +28,9 @@ def watchlist_mode(user_instance, username):
     def display_movies(movies, user_instance, username):
         """Display watchlist movies or appropriate message"""
         if movies and len(movies) > 0:
-            # Display movies
-            display.movies_dataframe(movies, columns=WATCHLIST_COLUMNS)
+            # Display movies with format from session state
+            csv_format = st.session_state.get('csv_format', 'Letterboxd')
+            display.movies_dataframe(movies, columns=WATCHLIST_COLUMNS, csv_format=csv_format)
         else:
             if hasattr(user_instance, 'watchlist_length') and user_instance.watchlist_length == 0:
                 messages.watchlist_empty(username)
@@ -152,13 +153,17 @@ def list_mode(processed_input):
         display.object_details(user_list)
 
         if list_meta['is_available']:
-            display.movies_dataframe(user_list.movies, columns=LIST_COLUMNS)
+            csv_format = st.session_state.get('csv_format', 'Letterboxd')
+            display.movies_dataframe(user_list.movies, columns=LIST_COLUMNS, csv_format=csv_format)
         else:
             messages.list_unavailable()
 
-    st.button('Get again.')
+    # show content
     user_list, list_meta = create_list(url_dom, processed_input)
     display_content(user_list, list_meta)
+
+    # show button to get again
+    st.button('Get again.')
 
 def determine_mode(user_input):
     """Determine which mode to use based on user input"""

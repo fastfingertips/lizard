@@ -1,15 +1,22 @@
+"""
+Display widgets for rendering content.
+
+These widgets display content without returning values.
+"""
+
 import pandas as pd
 import streamlit as st
-from constants import LIST_COLUMNS
+from constants import LIST_COLUMNS, CSV_FORMAT_COLUMNS
 
 
-def movies_dataframe(movies_data, columns=None):
+def movies_dataframe(movies_data, columns=None, csv_format="Letterboxd"):
     """
     Display movies data as a dataframe with specified columns.
     
     Args:
         movies_data: List of movie dictionaries
         columns: List of column names to display (defaults to LIST_COLUMNS)
+        csv_format: CSV format name for column renaming ("Letterboxd" or "TMDB")
     """
     if columns is None:
         columns = LIST_COLUMNS
@@ -22,6 +29,10 @@ def movies_dataframe(movies_data, columns=None):
     
     # Create DataFrame with exact column order
     df = pd.DataFrame(filtered_data, columns=columns)
+    
+    # Rename columns based on selected format
+    column_mapping = CSV_FORMAT_COLUMNS.get(csv_format, CSV_FORMAT_COLUMNS["Letterboxd"])
+    df = df.rename(columns=column_mapping)
     
     st.dataframe(
         df,

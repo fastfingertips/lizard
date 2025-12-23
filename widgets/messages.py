@@ -1,3 +1,9 @@
+"""
+Message widgets for displaying notifications.
+
+These widgets display status messages, warnings, and errors.
+"""
+
 import streamlit as st
 
 
