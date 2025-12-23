@@ -195,6 +195,10 @@ if __name__ == "__main__":
     page = Page()
     page.create_title()
     page.create_footer()
+    
+    csv_format = selectors.csv_format_selector()
+    st.session_state['csv_format'] = csv_format
+    
     user_input = Input()
     user_input.process_data()
     determine_mode(user_input)
