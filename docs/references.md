@@ -26,7 +26,6 @@
 ## Python Standard Library
 - **dataclasses** - https://docs.python.org/3/library/dataclasses.html
 - **typing** - https://docs.python.org/3/library/typing.html
-- **typing_extensions** - https://typing-extensions.readthedocs.io/en/latest/
 - **os.path.join()** - https://docs.python.org/3/library/os.path.html#os.path.join
 - **json** - https://docs.python.org/3/library/json.html
 - **time** - https://docs.python.org/3/library/time.html
@@ -40,16 +39,10 @@
 
 ## Third-Party Libraries
 - **pandas.DataFrame** - https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html
-- **BeautifulSoup** - https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-- **requests** - https://docs.python-requests.org/en/latest/api/
-- **stqdm** - https://github.com/Wirg/stqdm
 - **letterboxdpy** - https://github.com/fastfingertips/letterboxdpy
-- **lxml** - https://lxml.de/
 
 ## Development
 - **Conventional Commits** - https://www.conventionalcommits.org/
 - **Streamlit Cloud** - https://docs.streamlit.io/deploy/streamlit-cloud
 - **Streamlit Configuration** - https://docs.streamlit.io/develop/api-reference/configuration
 - **Letterboxd Data Import** - https://letterboxd.com/about/importing-data/
-- **NTFY.sh** - https://ntfy.sh/
-- **Rentry.co** - https://rentry.co/

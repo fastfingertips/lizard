@@ -1,8 +1,3 @@
-beautifulsoup4
 pandas
-requests
 streamlit
-stqdm
-typing_extensions
 letterboxdpy @ git+https://github.com/fastfingertips/letterboxdpy@main
-lxml
