@@ -9,7 +9,7 @@ import streamlit as st
 import re
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.utils.utils_url import is_short_url, parse_list_url
-from letterboxdpy.utils.utils_validators import is_url
+from pykit.url_utils import is_valid_url as is_url
 
 
 class Input:
