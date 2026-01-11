@@ -5,7 +5,7 @@ These widgets get user input and return the selected value.
 """
 
 import streamlit as st
-from constants import CSV_FORMAT_COLUMNS
+from letterboxdpy.constants.project import CSV_FORMAT_COLUMNS
 
 
 def csv_format_selector():

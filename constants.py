@@ -1,9 +1,0 @@
-from letterboxdpy.constants.project import (
-    LIST_COLUMNS,
-    WATCHLIST_COLUMNS,
-    LETTERBOXD_COLUMNS,
-    CSV_FORMAT_COLUMNS,
-    REQUIRED_COLUMNS,
-    RATING_RANGE,
-    RATING10_RANGE
-)

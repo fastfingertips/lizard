@@ -6,7 +6,7 @@ These widgets display content without returning values.
 
 import pandas as pd
 import streamlit as st
-from constants import LIST_COLUMNS, CSV_FORMAT_COLUMNS
+from letterboxdpy.constants.project import LIST_COLUMNS, CSV_FORMAT_COLUMNS
 
 
 def movies_dataframe(movies_data, columns=None, csv_format="Letterboxd"):

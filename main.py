@@ -8,7 +8,7 @@ from models.manager import Input
 from models.watchlist import WatchList
 from models.userlist import UserList
 from models.url import Url
-from constants import WATCHLIST_COLUMNS, LIST_COLUMNS
+from letterboxdpy.constants.project import WATCHLIST_COLUMNS, LIST_COLUMNS
 from widgets import selectors, display, messages
 
 

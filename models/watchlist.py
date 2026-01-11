@@ -1,6 +1,6 @@
 from letterboxdpy.pages.user_list import extract_movies
 from letterboxdpy.pages import user_watchlist
-from utils.transformers import transform_to_ranked_movies
+from letterboxdpy.utils.utils_csv import transform_to_ranked_movies
 
 
 class WatchList(user_watchlist.UserWatchlist):
