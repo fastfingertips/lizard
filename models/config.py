@@ -10,6 +10,8 @@ import streamlit as st
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 @dataclass
 class PageConfig:
@@ -92,7 +94,7 @@ class Page:
 
     def _setup_styles(self):
         """Loads and applies external CSS styles"""
-        css_file = os.path.join('static', 'styles', 'styles.css')
+        css_file = os.path.join(BASE_DIR, 'static', 'styles', 'styles.css')
         with open(css_file, 'r') as f:
             css = f.read()
             st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
@@ -103,7 +105,7 @@ class Page:
 
     def create_footer(self):
         """Creates page footer"""
-        html_file = os.path.join('static', 'templates', 'footer.html')
+        html_file = os.path.join(BASE_DIR, 'static', 'templates', 'footer.html')
         with open(html_file, 'r') as f:
             html = f.read()
             st.markdown(html, unsafe_allow_html=True)
