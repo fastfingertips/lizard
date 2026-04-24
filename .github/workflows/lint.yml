@@ -21,3 +21,5 @@ jobs:
         pip install ruff
     - name: Run Ruff
       run: ruff check .
+    - name: Run jscpd (Copy-Paste Detector)
+      run: npx jscpd .

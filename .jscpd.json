@@ -1,0 +1,15 @@
+{
+  "threshold": 0,
+  "reporters": [
+    "html",
+    "console"
+  ],
+  "ignore": [
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/.git/**",
+    "**/.streamlit/**"
+  ],
+  "absolute": true,
+  "gitignore": true
+}
