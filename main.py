@@ -193,7 +193,7 @@ def determine_mode(user_input):
 
 if __name__ == "__main__":
     page = Page()
-    page.create_title()
+    page.create_title('Letterboxd List Downloader')
     page.create_footer()
     
     csv_format = selectors.csv_format_selector()

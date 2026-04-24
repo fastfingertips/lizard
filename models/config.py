@@ -31,7 +31,7 @@ class Page:
     
     def __init__(self):
         self.repo_slug = 'lizard'
-        self._page_title = 'Letterboxd List Downloader'
+        self._page_title = 'Lizard'
         self._setup_page_config()
         self._setup_background()
         self._setup_styles()
