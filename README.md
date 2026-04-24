@@ -1,6 +1,6 @@
 ## Lizard - Letterboxd Data Processor
 
-This project provides a [web-based](https://lizard.streamlit.app/) tool for downloading and processing Letterboxd data including user lists and watchlists from Letterboxd[*](https://letterboxd.com/about).
+**Lizard** is a [web-based](https://lizard.streamlit.app/) tool designed to fetch [Letterboxd](https://letterboxd.com/) lists and watchlists, offering formatted data views and CSV exports compatible with Letterboxd and TMDB.
 
 [![License](https://img.shields.io/github/license/fastfingertips/lizard?color=blue)](https://github.com/fastfingertips/lizard/blob/main/LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://www.python.org)
