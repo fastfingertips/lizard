@@ -1,4 +1,4 @@
-name: Lint
+name: Code Quality
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  lint:
+  quality:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
