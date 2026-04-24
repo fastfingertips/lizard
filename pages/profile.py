@@ -75,7 +75,7 @@ def create_favorites_section(user_instance):
     st.subheader("Favorite Films")
     cols = st.columns(4, gap="medium")
 
-    for i, (movie_id, movie) in enumerate(user_instance.favorites.items()):
+    for i, (_movie_id, movie) in enumerate(user_instance.favorites.items()):
         with cols[i % 4]:
             try:
                 film = Movie(movie["slug"])
@@ -96,8 +96,8 @@ def create_recent_activity_section(user_instance):
     diary_data = user_instance.recent["diary"]
 
     if diary_data.get("months"):
-        for month, days in diary_data["months"].items():
-            for day, films in days.items():
+        for days in diary_data["months"].values():
+            for films in days.values():
                 recent_films.extend(films)
                 if len(recent_films) >= 4:
                     break

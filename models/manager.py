@@ -38,14 +38,11 @@ class Input:
         query_data = st.query_params.to_dict()
 
         input_data = st.text_input(
-            value=query_data["q"] if "q" in query_data else "",
+            value=query_data.get("q", ""),
             label=self.textbox_placeholder,
         )
 
-        if "q" in query_data:
-            input_type = "query"
-        else:
-            input_type = "input" if input_data else None
+        input_type = "query" if "q" in query_data else "input" if input_data else None
 
         st.query_params.clear()
 
@@ -66,7 +63,7 @@ class Input:
         self.is_short_url = not self.is_username and is_short_url(self.data)
 
     @staticmethod
-    def convert_to_url(data):
+    def convert_to_url(data):  # noqa: C901
         """
         normal:
             fastfingertips/list_name                              -> fastfingertips/list_name

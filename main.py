@@ -58,7 +58,7 @@ def watchlist_mode(user_instance, username):
         handle_error(e)
 
 
-def username_mode(username):
+def username_mode(username):  # noqa: C901
     # Early validation - fail fast
     try:
         user_instance = User(username)
@@ -86,7 +86,7 @@ def username_mode(username):
         """Get regular list options if available"""
         options = {}
         if user_lists and "lists" in user_lists and user_lists["lists"]:
-            for _, list_data in user_lists["lists"].items():
+            for list_data in user_lists["lists"].values():
                 display_name = f"{list_data['title']} ({list_data['count']} movies)"
                 options[display_name] = list_data["url"]
         return options
@@ -103,7 +103,7 @@ def username_mode(username):
         """Handle list selection and navigation"""
         selected_list = st.selectbox(
             "Select a list:",
-            options=["Choose a list..."] + list(list_options.keys()),
+            options=["Choose a list...", *list(list_options.keys())],
             index=0,
         )
 

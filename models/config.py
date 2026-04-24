@@ -81,11 +81,11 @@ class Page:
             <style>
                 .stApp {
                     background-image: linear-gradient(
-                        180deg, 
-                        #f2f2f2, 
-                        14%, 
-                        #e6e6e6, 
-                        #e6e6e6, 
+                        180deg,
+                        #f2f2f2,
+                        14%,
+                        #e6e6e6,
+                        #e6e6e6,
                         #e6e6e6
                     );
                 }
