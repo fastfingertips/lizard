@@ -18,3 +18,6 @@ max-complexity = 15
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["models", "widgets", "utils", "api", "pages"]

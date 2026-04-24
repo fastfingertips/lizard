@@ -4,6 +4,7 @@ from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.pages.user_list import extract_list_meta
 from letterboxdpy.user import User
 from letterboxdpy.utils.utils_parser import is_list
+
 from models.config import Page
 from models.manager import Input
 from models.url import Url
