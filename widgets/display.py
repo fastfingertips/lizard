@@ -37,7 +37,7 @@ def movies_dataframe(movies_data, columns=None, csv_format="Letterboxd"):
     st.dataframe(
         df,
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
 
