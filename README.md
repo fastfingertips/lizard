@@ -3,8 +3,8 @@
 **Lizard** is a [web-based](https://lizard.streamlit.app/) tool designed to fetch [Letterboxd](https://letterboxd.com/) lists and watchlists, offering formatted data views and CSV exports compatible with Letterboxd and TMDB.
 
 [![License](https://img.shields.io/github/license/fastfingertips/lizard?color=blue)](https://github.com/fastfingertips/lizard/blob/main/LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://www.python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.35+-FF4B4B)](https://streamlit.io)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://www.python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.56+-FF4B4B)](https://streamlit.io)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Flizard.streamlit.app%2F&label=Lizard%20App)](https://lizard.streamlit.app/)
 
 https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907-8de5abc170b8
