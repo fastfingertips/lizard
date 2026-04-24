@@ -1,5 +1,5 @@
-from letterboxdpy.pages.user_list import extract_movies
 from letterboxdpy.pages import user_watchlist
+from letterboxdpy.pages.user_list import extract_movies
 from letterboxdpy.utils.utils_csv import transform_to_ranked_movies
 
 
@@ -12,7 +12,7 @@ class WatchList(user_watchlist.UserWatchlist):
     def __init__(self, url, username: str):
         """
         Initialize WatchList with URL and username.
-        
+
         Args:
             url: URL object containing the watchlist URL
             username: Letterboxd username
@@ -24,7 +24,7 @@ class WatchList(user_watchlist.UserWatchlist):
     def get_movies(self) -> list:
         """
         Get movies from watchlist.
-        
+
         Returns:
             List of movies in ranked format
         """
@@ -35,19 +35,19 @@ class WatchList(user_watchlist.UserWatchlist):
     def movies(self):
         """Property to get movies from watchlist."""
         return self.get_movies()
-    
+
     @property
     def metadata(self):
         """
         Get watchlist metadata as dictionary.
-        
+
         Returns:
             Dictionary containing watchlist metadata
         """
         return {
-            'url': self.url,
-            'username': self.username,
-            'count': super().get_count(),
-            'owner': super().get_owner(),
-            'available': True
+            "url": self.url,
+            "username": self.username,
+            "count": super().get_count(),
+            "owner": super().get_owner(),
+            "available": True,
         }

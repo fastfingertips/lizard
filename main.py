@@ -1,15 +1,15 @@
 import streamlit as st
+from letterboxdpy.constants.project import LIST_COLUMNS, WATCHLIST_COLUMNS
 from letterboxdpy.core.scraper import parse_url
+from letterboxdpy.pages.user_list import extract_list_meta
 from letterboxdpy.user import User
 from letterboxdpy.utils.utils_parser import is_list
-from letterboxdpy.pages.user_list import extract_list_meta
 from models.config import Page
 from models.manager import Input
-from models.watchlist import WatchList
-from models.userlist import UserList
 from models.url import Url
-from letterboxdpy.constants.project import WATCHLIST_COLUMNS, LIST_COLUMNS
-from widgets import selectors, display, messages
+from models.userlist import UserList
+from models.watchlist import WatchList
+from widgets import display, messages, selectors
 
 
 def watchlist_mode(user_instance, username):
@@ -22,17 +22,22 @@ def watchlist_mode(user_instance, username):
 
     def load_movies(watchlist):
         """Load movies from watchlist with spinner"""
-        with st.spinner('Loading watchlist data...'):
+        with st.spinner("Loading watchlist data..."):
             return watchlist.movies
 
     def display_movies(movies, user_instance, username):
         """Display watchlist movies or appropriate message"""
         if movies and len(movies) > 0:
             # Display movies with format from session state
-            csv_format = st.session_state.get('csv_format', 'Letterboxd')
-            display.movies_dataframe(movies, columns=WATCHLIST_COLUMNS, csv_format=csv_format)
+            csv_format = st.session_state.get("csv_format", "Letterboxd")
+            display.movies_dataframe(
+                movies, columns=WATCHLIST_COLUMNS, csv_format=csv_format
+            )
         else:
-            if hasattr(user_instance, 'watchlist_length') and user_instance.watchlist_length == 0:
+            if (
+                hasattr(user_instance, "watchlist_length")
+                and user_instance.watchlist_length == 0
+            ):
                 messages.watchlist_empty(username)
             else:
                 messages.watchlist_private(username)
@@ -45,12 +50,13 @@ def watchlist_mode(user_instance, username):
         watchlist = create_watchlist(username)
         # Display watchlist details first, before loading movies
         display.object_details(watchlist)
-        
+
         # Then load and display movies
         movies = load_movies(watchlist)
         display_movies(movies, user_instance, username)
     except Exception as e:
         handle_error(e)
+
 
 def username_mode(username):
     # Early validation - fail fast
@@ -65,18 +71,24 @@ def username_mode(username):
     # Nested functions after validation
     def get_watchlist(is_hq_user, user_instance, username):
         """Get watchlist options if available"""
-        if not is_hq_user and user_instance.watchlist_length and user_instance.watchlist_length > 0:
+        if (
+            not is_hq_user
+            and user_instance.watchlist_length
+            and user_instance.watchlist_length > 0
+        ):
             watchlist_url = f"https://letterboxd.com/{username}/watchlist/"
-            return {f"Watchlist ({user_instance.watchlist_length} movies)": watchlist_url}
+            return {
+                f"Watchlist ({user_instance.watchlist_length} movies)": watchlist_url
+            }
         return {}
 
     def get_lists(user_lists):
         """Get regular list options if available"""
         options = {}
-        if user_lists and 'lists' in user_lists and user_lists['lists']:
-            for _, list_data in user_lists['lists'].items():
+        if user_lists and "lists" in user_lists and user_lists["lists"]:
+            for _, list_data in user_lists["lists"].items():
                 display_name = f"{list_data['title']} ({list_data['count']} movies)"
-                options[display_name] = list_data['url']
+                options[display_name] = list_data["url"]
         return options
 
     def has_watchlist(watchlist_options):
@@ -92,12 +104,12 @@ def username_mode(username):
         selected_list = st.selectbox(
             "Select a list:",
             options=["Choose a list..."] + list(list_options.keys()),
-            index=0
+            index=0,
         )
 
         if selected_list and selected_list != "Choose a list...":
             selected_url = list_options[selected_list]
-            if '/watchlist/' in selected_url:
+            if "/watchlist/" in selected_url:
                 watchlist_mode(user_instance, username)
             else:
                 list_mode(selected_url)
@@ -125,6 +137,7 @@ def username_mode(username):
         else:
             messages.watchlist_might_be_private()
 
+
 def list_mode(processed_input):
     # Early validation - fail fast
     url_dom = parse_url(processed_input)
@@ -138,12 +151,10 @@ def list_mode(processed_input):
     def create_list(url_dom, processed_input):
         """Create UserList instance from validated URL"""
         list_meta = extract_list_meta(url_dom, processed_input)
-        url_info = Input.parse_letterboxd_url(list_meta['url'])
+        url_info = Input.parse_letterboxd_url(list_meta["url"])
 
         user_list = UserList(
-            Url(list_meta['url'], url_dom),
-            url_info['username'],
-            url_info['slug']
+            Url(list_meta["url"], url_dom), url_info["username"], url_info["slug"]
         )
 
         return user_list, list_meta
@@ -152,9 +163,11 @@ def list_mode(processed_input):
         """Display list details and movies if available"""
         display.object_details(user_list)
 
-        if list_meta['is_available']:
-            csv_format = st.session_state.get('csv_format', 'Letterboxd')
-            display.movies_dataframe(user_list.movies, columns=LIST_COLUMNS, csv_format=csv_format)
+        if list_meta["is_available"]:
+            csv_format = st.session_state.get("csv_format", "Letterboxd")
+            display.movies_dataframe(
+                user_list.movies, columns=LIST_COLUMNS, csv_format=csv_format
+            )
         else:
             messages.list_unavailable()
 
@@ -163,7 +176,8 @@ def list_mode(processed_input):
     display_content(user_list, list_meta)
 
     # show button to get again
-    st.button('Get again.')
+    st.button("Get again.")
+
 
 def determine_mode(user_input):
     """Determine which mode to use based on user input"""
@@ -193,12 +207,12 @@ def determine_mode(user_input):
 
 if __name__ == "__main__":
     page = Page()
-    page.create_title('Letterboxd List Downloader')
+    page.create_title("Letterboxd List Downloader")
     page.create_footer()
-    
+
     csv_format = selectors.csv_format_selector()
-    st.session_state['csv_format'] = csv_format
-    
+    st.session_state["csv_format"] = csv_format
+
     user_input = Input()
     user_input.process_data()
     determine_mode(user_input)

@@ -5,22 +5,22 @@ Method ordering follows dependency logic: methods that are used by other methods
 are defined first, followed by methods that use them.
 """
 
-from letterboxdpy.utils.utils_url import get_list_slug
+from letterboxdpy.constants.project import DOMAIN_MATCHES, URL_PROTOCOLS
 from letterboxdpy.core.scraper import parse_url
-from letterboxdpy.constants.project import URL_PROTOCOLS, DOMAIN_MATCHES
+from letterboxdpy.utils.utils_url import get_list_slug
 
 
-class Url():
+class Url:
     """URL handler for Letterboxd list processing."""
 
     def __init__(self, url, url_dom=None):
         self.url = url
-        self.detail_url = url + 'detail/'
-        self.page_url = self.detail_url + 'page/'
+        self.detail_url = url + "detail/"
+        self.page_url = self.detail_url + "page/"
         self._url_dom = url_dom
         self._detail_url_dom = None
         # Only extract slug for list URLs, not watchlist URLs
-        if '/list/' in url:
+        if "/list/" in url:
             self.slug = get_list_slug(self.url)
         else:
             self.slug = None
@@ -61,9 +61,9 @@ class Url():
             if protocol in url:
                 for match in DOMAIN_MATCHES:
                     if match in url:
-                        if match == 'boxd.it/':
+                        if match == "boxd.it/":
                             return url
-                        url = url.replace(protocol + match, '')
+                        url = url.replace(protocol + match, "")
                         return url
         return url
 
