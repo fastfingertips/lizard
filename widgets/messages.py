@@ -14,13 +14,19 @@ def user_not_found(username):
 
 def invalid_list_url():
     """Display invalid list URL warning"""
-    st.warning('The address is not a Letterboxd list.', icon='💡')
-    st.warning('Please enter a valid **username**, **list url** or **username/list-title.**', icon='💡')
+    st.warning("The address is not a Letterboxd list.", icon="💡")
+    st.warning(
+        "Please enter a valid **username**, **list url** or **username/list-title.**",
+        icon="💡",
+    )
 
 
 def invalid_input():
     """Display invalid input warning"""
-    st.warning('Please enter a valid **username**, **list url** or **username/list-title.**', icon='💡')
+    st.warning(
+        "Please enter a valid **username**, **list url** or **username/list-title.**",
+        icon="💡",
+    )
 
 
 def watchlist_empty(username):
@@ -35,22 +41,30 @@ def watchlist_private(username):
 
 def only_watchlist(username):
     """Display only watchlist available message"""
-    st.info(f"**[{username}](https://letterboxd.com/{username}/)** has only a watchlist (no public lists).")
+    st.info(
+        f"**[{username}](https://letterboxd.com/{username}/)** has only a watchlist (no public lists)."
+    )
 
 
 def hq_user_status(username):
     """Display HQ user status message"""
-    st.info(f"**[{username}](https://letterboxd.com/{username}/)** is an HQ user (no watchlist available).")
+    st.info(
+        f"**[{username}](https://letterboxd.com/{username}/)** is an HQ user (no watchlist available)."
+    )
 
 
 def lists_no_watchlist(username):
     """Display lists available but no watchlist message"""
-    st.info(f"**[{username}](https://letterboxd.com/{username}/)** has public lists. Watchlist might be private or empty.")
+    st.info(
+        f"**[{username}](https://letterboxd.com/{username}/)** has public lists. Watchlist might be private or empty."
+    )
 
 
 def no_public_lists(username):
     """Display no public lists message"""
-    st.info(f"**[{username}](https://letterboxd.com/{username}/)** has no public lists.")
+    st.info(
+        f"**[{username}](https://letterboxd.com/{username}/)** has no public lists."
+    )
 
 
 def hq_no_watchlist():
@@ -65,7 +79,7 @@ def watchlist_might_be_private():
 
 def list_unavailable():
     """Display list unavailable warning"""
-    st.warning('List is not available.')
+    st.warning("List is not available.")
 
 
 def error(message):
@@ -75,4 +89,4 @@ def error(message):
 
 def awaiting_input():
     """Display awaiting input message"""
-    st.write('_Awaiting input.._')
+    st.write("_Awaiting input.._")

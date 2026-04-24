@@ -1,0 +1,32 @@
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+# E      : Error
+# F      : Pyflakes
+# W      : Warning
+# B      : Bugbear (Common bugs)
+# I      : Isort (Import sorting)
+# UP     : Upgrade (Modern Python syntax)
+# S      : Bandit (Security)
+# C90    : McCabe (Complexity)
+# SIM    : Simplify (Cleaner code)
+# PERF   : Performance
+# RUF    : Ruff-specific rules
+select = ["E", "F", "W", "B", "I", "UP", "S", "C90", "SIM", "PERF", "RUF"]
+
+ignore = [
+    "E402",    # Module level import not at top
+    "E501",    # Line too long
+    "S101",    # Use of assert
+    "PLR0913", # Too many arguments
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
