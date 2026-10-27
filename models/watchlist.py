@@ -1,53 +1,42 @@
-from letterboxdpy.pages import user_watchlist
-from letterboxdpy.pages.user_list import extract_movies
 from letterboxdpy.utils.utils_csv import transform_to_ranked_movies
+from letterboxdpy.utils.utils_url import extract_path_segment
+from letterboxdpy.watchlist import Watchlist
 
 
-class WatchList(user_watchlist.UserWatchlist):
+class WatchList(Watchlist):
     """
     WatchList class for handling Letterboxd user watchlists.
-    Inherits from letterboxdpy's UserWatchlist for core functionality.
+    Inherits from letterboxdpy's Watchlist for core functionality.
     """
 
-    def __init__(self, url, username: str):
-        """
-        Initialize WatchList with URL and username.
+    def __init__(self, target, username: str | None = None):
+        """Initialize WatchList with username or URL."""
+        if username:
+            user = username
+        elif hasattr(target, "username") and target.username:
+            user = target.username
+        elif isinstance(target, str) and "letterboxd.com" in target:
+            extracted = extract_path_segment(target, after="letterboxd.com/")
+            user = extracted if extracted else target
+        else:
+            user = str(target)
 
-        Args:
-            url: URL object containing the watchlist URL
-            username: Letterboxd username
-        """
-        super().__init__(username)
-        self.url = url.url
-        self.username = username
-
-    def get_movies(self) -> list:
-        """
-        Get movies from watchlist.
-
-        Returns:
-            List of movies in ranked format
-        """
-        letterboxd_movies = extract_movies(self.url, items_per_page=self.FILMS_PER_PAGE)
-        return transform_to_ranked_movies(letterboxd_movies)
+        super().__init__(user)
+        if hasattr(target, "url"):
+            self.url = target.url
 
     @property
-    def movies(self):
-        """Property to get movies from watchlist."""
-        return self.get_movies()
+    def movies(self) -> list:
+        """Get watchlist movies formatted for dataframe display."""
+        return transform_to_ranked_movies(super().movies)
 
     @property
-    def metadata(self):
-        """
-        Get watchlist metadata as dictionary.
-
-        Returns:
-            Dictionary containing watchlist metadata
-        """
+    def metadata(self) -> dict:
+        """Get watchlist metadata as dictionary."""
         return {
             "url": self.url,
             "username": self.username,
-            "count": super().get_count(),
-            "owner": super().get_owner(),
+            "count": self.count,
+            "owner": self.get_owner(),
             "available": True,
         }
