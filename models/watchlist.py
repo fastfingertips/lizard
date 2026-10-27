@@ -4,10 +4,7 @@ from letterboxdpy.watchlist import Watchlist
 
 
 class WatchList(Watchlist):
-    """
-    WatchList class for handling Letterboxd user watchlists.
-    Inherits from letterboxdpy's Watchlist for core functionality.
-    """
+    """WatchList class for handling Letterboxd user watchlists."""
 
     def __init__(self, target, username: str | None = None):
         """Initialize WatchList with username or URL."""
@@ -22,21 +19,8 @@ class WatchList(Watchlist):
             user = str(target)
 
         super().__init__(user)
-        if hasattr(target, "url"):
-            self.url = target.url
 
     @property
     def movies(self) -> list:
         """Get watchlist movies formatted for dataframe display."""
         return transform_to_ranked_movies(super().movies)
-
-    @property
-    def metadata(self) -> dict:
-        """Get watchlist metadata as dictionary."""
-        return {
-            "url": self.url,
-            "username": self.username,
-            "count": self.count,
-            "owner": self.get_owner(),
-            "available": True,
-        }

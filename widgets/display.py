@@ -45,7 +45,7 @@ def movies_dataframe(movies_data, columns=None, csv_format="Letterboxd"):
 
 def object_details(obj, title=None):
     """
-    Display object details using metadata property if available.
+    Display object details using jsonify method if available.
 
     Args:
         obj: Object to display
@@ -54,15 +54,16 @@ def object_details(obj, title=None):
     if title:
         st.subheader(title)
 
-    # Try to use metadata property first
-    if hasattr(obj, "metadata"):
+    if hasattr(obj, "jsonify"):
+        details = {k: v for k, v in obj.jsonify().items() if not k.startswith("_")}
+    elif hasattr(obj, "metadata"):
         details = obj.metadata
     else:
-        # Fallback to __dict__ attributes
-        details = {}
-        for key, value in obj.__dict__.items():
-            if "dom" not in key.lower() and not key.startswith("_"):
-                details[key] = value
+        details = {
+            key: value
+            for key, value in obj.__dict__.items()
+            if "dom" not in key.lower() and not key.startswith("_")
+        }
 
     with st.expander(title or "Details", expanded=False):
         st.json(details, expanded=True)
