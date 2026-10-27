@@ -68,12 +68,41 @@ class User:
         return raw.strip("/").lower()
 
     def get_lists(self, max_lists: int | None = None) -> dict:
-        """Fetch user lists using canonical trailing slash URL with error handling."""
-        try:
-            url = f"{DOMAIN}/{self.username}/lists/"
-            return ListsExtractor.from_url(url, max_lists)
-        except Exception:
-            return {"lists": {}, "count": 0}
+        """Fetch user lists with canonical page 1 URL and resilient pagination."""
+        data = {"limit": False, "count": 0, "last_page": 1, "lists": {}}
+        page = 1
+
+        while True:
+            try:
+                page_url = (
+                    f"{DOMAIN}/{self.username}/lists/"
+                    if page == 1
+                    else f"{DOMAIN}/{self.username}/lists/page/{page}/"
+                )
+                dom = parse_url(page_url)
+                articles = dom.find_all("article", {"class": "list-summary"})
+                if not articles:
+                    break
+
+                for item in articles:
+                    list_data = ListsExtractor._extract_list_data(item)
+                    data["lists"].update(list_data)
+
+                    if max_lists and len(data["lists"]) >= max_lists:
+                        data["limit"] = True
+                        break
+
+                if data["limit"] or len(articles) < 12:
+                    break
+
+                page += 1
+            except Exception:
+                # If subsequent page fails due to Cloudflare rate-limit, keep parsed lists
+                break
+
+        data["count"] = len(data["lists"])
+        data["last_page"] = page
+        return data
 
     def jsonify(self) -> dict:
         """Serialize user profile attributes for UI display."""
