@@ -158,15 +158,24 @@ def list_mode(processed_input):
 
         return user_list, list_meta
 
+    def load_movies(user_list):
+        """Load movies from user list with spinner."""
+        with st.spinner("Loading list data..."):
+            return user_list.movies
+
     def display_content(user_list, list_meta):
         """Display list details and movies if available"""
         display.object_details(user_list)
 
         if list_meta["is_available"]:
-            csv_format = st.session_state.get("csv_format", "Letterboxd")
-            display.movies_dataframe(
-                user_list.movies, columns=LIST_COLUMNS, csv_format=csv_format
-            )
+            try:
+                movies = load_movies(user_list)
+                csv_format = st.session_state.get("csv_format", "Letterboxd")
+                display.movies_dataframe(
+                    movies, columns=LIST_COLUMNS, csv_format=csv_format
+                )
+            except Exception as e:
+                messages.error(str(e))
         else:
             messages.list_unavailable()
 
@@ -193,15 +202,15 @@ def determine_mode(user_input):
                 processed_url = user_input.data.rstrip("/") + "/"
             else:
                 processed_url = user_input.convert_to_url(user_input.data)
-
-            if not processed_url:
-                messages.invalid_input()
-                st.stop()
-
-            list_mode(processed_url)
         except Exception:
             messages.invalid_input()
             st.stop()
+
+        if not processed_url:
+            messages.invalid_input()
+            st.stop()
+
+        list_mode(processed_url)
 
 
 if __name__ == "__main__":
