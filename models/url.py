@@ -14,9 +14,10 @@ class Url:
     """URL handler for Letterboxd list processing."""
 
     def __init__(self, url, url_dom=None):
-        self.url = url
-        self.detail_url = url + "detail/"
-        self.page_url = self.detail_url + "page/"
+        clean_url = url.rstrip("/") + "/"
+        self.url = clean_url
+        self.detail_url = f"{clean_url}detail/"
+        self.page_url = f"{self.detail_url}page/"
         self._url_dom = url_dom
         self._detail_url_dom = None
         # Only extract slug for list URLs, not watchlist URLs

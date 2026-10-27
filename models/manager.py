@@ -5,9 +5,8 @@ Handles different types of user input (usernames, URLs, patterns) and
 provides validation, type detection, and URL conversion utilities.
 """
 
-import re
-
 import streamlit as st
+from fastfingertips.url_utils import extract_path_segment
 from fastfingertips.url_utils import is_valid_url as is_url
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.utils.utils_url import is_short_url, parse_list_url
@@ -163,7 +162,7 @@ class Input:
                 if all([username, list_slug]):
                     filters = ""
                     if remaining_blocks:
-                        filters = "/".join(remaining_blocks)
+                        filters = "/".join(remaining_blocks) + "/"
                     return f"{DOMAIN}/{username}/list/{list_slug}/" + filters
                 else:
                     st.error("Username or list title is empty.")
@@ -180,11 +179,10 @@ class Input:
     def parse_letterboxd_url(url: str) -> dict:
         """Parse Letterboxd URL and extract components"""
         if "/watchlist" in url:
-            pattern = r"letterboxd\.com/([^/]+)/watchlist"
-            match = re.search(pattern, url)
-            if match:
+            username = extract_path_segment(url, after="letterboxd.com/")
+            if username:
                 return {
-                    "username": match.group(1),
+                    "username": username,
                     "slug": "watchlist",
                     "type": "watchlist",
                 }
