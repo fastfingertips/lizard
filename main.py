@@ -1,5 +1,10 @@
 import streamlit as st
 from letterboxdpy.constants.project import LIST_COLUMNS, WATCHLIST_COLUMNS
+from letterboxdpy.core.exceptions import (
+    AccessDeniedError,
+    PageLoadError,
+    ResourceNotFoundError,
+)
 from letterboxdpy.user import User
 
 from models.config import Page
@@ -53,41 +58,64 @@ def watchlist_mode(user_instance, username):
         handle_error(e)
 
 
+def _handle_access_denied(username):
+    messages.access_denied(username)
+    st.info(
+        f"You can still access **[{username}](https://letterboxd.com/{username}/)**'s "
+        "watchlist or specific list directly:"
+    )
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        if st.button("Load Watchlist", type="primary"):
+            watchlist_mode(None, username)
+            st.stop()
+    with col2:
+        st.caption(f"Example: `{username}/list-slug/` or `{username}/watchlist/`")
+    st.stop()
+
+
+def _build_list_options(user_instance, user_lists, username):
+    """Build unified watchlist and user list options dictionary"""
+    is_hq_user = getattr(user_instance, "badge", None) == "HQ"
+    options = {}
+
+    if (
+        not is_hq_user
+        and user_instance.watchlist_length
+        and user_instance.watchlist_length > 0
+    ):
+        options[f"Watchlist ({user_instance.watchlist_length} movies)"] = (
+            f"https://letterboxd.com/{username}/watchlist/"
+        )
+
+    if user_lists and "lists" in user_lists and user_lists["lists"]:
+        for list_data in user_lists["lists"].values():
+            options[f"{list_data['title']} ({list_data['count']} movies)"] = list_data[
+                "url"
+            ]
+
+    return is_hq_user, options
+
+
 def username_mode(username):
     # Early validation - fail fast
     try:
         user_instance = User(username)
         user_lists = user_instance.get_lists()
         display.object_details(user_instance)
-    except Exception:
+    except ResourceNotFoundError:
         messages.user_not_found(username)
         st.stop()
+    except AccessDeniedError:
+        _handle_access_denied(username)
+    except PageLoadError as exc:
+        messages.network_error(str(exc))
+        st.stop()
+    except Exception as exc:
+        messages.error(str(exc))
+        st.stop()
 
-    # Nested functions after validation
-    def get_watchlist(is_hq_user, user_instance, username):
-        """Get watchlist options if available"""
-        if (
-            not is_hq_user
-            and user_instance.watchlist_length
-            and user_instance.watchlist_length > 0
-        ):
-            watchlist_url = f"https://letterboxd.com/{username}/watchlist/"
-            return {
-                f"Watchlist ({user_instance.watchlist_length} movies)": watchlist_url
-            }
-        return {}
-
-    def get_lists(user_lists):
-        """Get regular list options if available"""
-        options = {}
-        if user_lists and "lists" in user_lists and user_lists["lists"]:
-            for list_data in user_lists["lists"].values():
-                display_name = f"{list_data['title']} ({list_data['count']} movies)"
-                options[display_name] = list_data["url"]
-        return options
-
-    def handle_list_selection(list_options, user_instance, username):
-        """Handle list selection and navigation"""
+    def handle_list_selection(list_options):
         selected_list = st.selectbox(
             "Select a list:",
             options=["Choose a list...", *list(list_options.keys())],
@@ -101,22 +129,19 @@ def username_mode(username):
             else:
                 list_mode(selected_url)
 
-    is_hq_user = getattr(user_instance, "badge", None) == "HQ"
-    watchlist_options = get_watchlist(is_hq_user, user_instance, username)
-    regular_list_options = get_lists(user_lists)
-    has_watchlist_flag = bool(watchlist_options)
-    has_regular_lists_flag = bool(regular_list_options)
-    list_options = {**watchlist_options, **regular_list_options}
+    is_hq_user, list_options = _build_list_options(user_instance, user_lists, username)
+    has_watchlist = any("/watchlist/" in url for url in list_options.values())
+    has_regular_lists = any("/watchlist/" not in url for url in list_options.values())
 
     if list_options:
-        if has_watchlist_flag and not has_regular_lists_flag:
+        if has_watchlist and not has_regular_lists:
             messages.only_watchlist(username)
-        elif is_hq_user and has_regular_lists_flag:
+        elif is_hq_user and has_regular_lists:
             messages.hq_user_status(username)
-        elif not is_hq_user and has_regular_lists_flag and not has_watchlist_flag:
+        elif not is_hq_user and has_regular_lists and not has_watchlist:
             messages.lists_no_watchlist(username)
 
-        handle_list_selection(list_options, user_instance, username)
+        handle_list_selection(list_options)
     else:
         messages.no_public_lists(username)
         if is_hq_user:
@@ -129,6 +154,12 @@ def list_mode(processed_input):
     try:
         url_info = Input.parse_letterboxd_url(processed_input)
         user_list = UserList(url_info["username"], url_info["slug"])
+    except ResourceNotFoundError:
+        messages.list_unavailable()
+        st.stop()
+    except AccessDeniedError:
+        messages.access_denied()
+        st.stop()
     except Exception:
         messages.invalid_list_url()
         st.stop()

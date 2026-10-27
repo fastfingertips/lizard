@@ -12,13 +12,27 @@ def user_not_found(username):
     st.error(f"User '[{username}](https://letterboxd.com/{username}/)' not found.")
 
 
+def access_denied(username=None):
+    """Display Cloudflare / IP block message"""
+    target = (
+        f" for [{username}](https://letterboxd.com/{username}/)" if username else ""
+    )
+    st.error(
+        f"Letterboxd Cloudflare protection blocked the cloud server IP{target} (403 Forbidden). "
+        "Direct list or watchlist URLs may still be accessible."
+    )
+
+
+def network_error(details=None):
+    """Display network or timeout error"""
+    msg = f": {details}" if details else "."
+    st.error(f"Network error communicating with Letterboxd{msg}")
+
+
 def invalid_list_url():
     """Display invalid list URL warning"""
     st.warning("The address is not a Letterboxd list.", icon="💡")
-    st.warning(
-        "Please enter a valid **username**, **list url** or **username/list-title.**",
-        icon="💡",
-    )
+    invalid_input()
 
 
 def invalid_input():
