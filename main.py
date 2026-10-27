@@ -15,7 +15,6 @@ from widgets import display, messages, selectors
 
 
 def watchlist_mode(user_instance, username):
-
     def create_watchlist(username):
         """Create WatchList instance"""
         return WatchList(username)
