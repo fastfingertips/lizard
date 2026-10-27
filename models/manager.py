@@ -37,12 +37,13 @@ class Input:
 
         st.query_params.clear()
 
-        self.data = input_data
+        self.data = input_data.strip() if input_data else ""
         self.type = input_type
-        self.length = len(input_data) if input_data else 0
+        self.length = len(self.data)
 
         self.is_empty = not self.data
-        self.is_username = bool(self.data and "/" not in self.data)
+        clean_input = self.data.strip("/")
+        self.is_username = bool(clean_input and "/" not in clean_input)
         self.is_url = bool(not self.is_username and is_url(self.data))
 
     @staticmethod
@@ -166,4 +167,8 @@ class Input:
         elif "/list/" in url:
             username, slug = parse_list_url(url)
             return {"username": username, "slug": slug, "type": "user_list"}
+        elif "letterboxd.com/" in url:
+            username = extract_path_segment(url, after="letterboxd.com/", before="/")
+            if username:
+                return {"username": username, "type": "user"}
         raise ValueError(f"Unsupported URL type: {url}")

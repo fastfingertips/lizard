@@ -5,10 +5,10 @@ from letterboxdpy.core.exceptions import (
     PageLoadError,
     ResourceNotFoundError,
 )
-from letterboxdpy.user import User
 
 from models.config import Page
 from models.manager import Input
+from models.user import User
 from models.userlist import UserList
 from models.watchlist import WatchList
 from widgets import display, messages, selectors
@@ -213,7 +213,11 @@ def determine_mode(user_input):
             url_info = Input.parse_letterboxd_url(processed_url)
             watchlist_mode(None, url_info["username"])
         else:
-            list_mode(processed_url)
+            url_info = Input.parse_letterboxd_url(processed_url)
+            if url_info.get("type") == "user":
+                username_mode(url_info["username"])
+            else:
+                list_mode(processed_url)
 
 
 if __name__ == "__main__":
