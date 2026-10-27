@@ -2,6 +2,7 @@
 
 from fastfingertips.url_utils import extract_path_segment
 from letterboxdpy.constants.project import DOMAIN
+from letterboxdpy.core.exceptions import AccessDeniedError
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.pages.user_profile import UserProfile
 from letterboxdpy.utils.lists_extractor import ListsExtractor
@@ -21,19 +22,33 @@ class User:
 
     def __init__(self, target):
         self.username = self.extract_username(target)
-        self.profile = Profile(self.username)
-        self.url = self.profile.url
-        self.id = self.profile.get_id()
-        self.badge = self.profile.get_badge()
-        self.display_name = self.profile.get_display_name()
-        self.bio = self.profile.get_bio()
-        self.location = self.profile.get_location()
-        self.website = self.profile.get_website()
-        self.watchlist_length = self.profile.get_watchlist_length()
-        self.stats = self.profile.get_stats()
-        self.favorites = self.profile.get_favorites()
-        self.avatar = self.profile.get_avatar()
-        self.backdrop = self.profile.get_backdrop()
+        self.url = f"{DOMAIN}/{self.username}/"
+        try:
+            self.profile = Profile(self.username)
+            self.id = self.profile.get_id()
+            self.badge = self.profile.get_badge()
+            self.display_name = self.profile.get_display_name()
+            self.bio = self.profile.get_bio()
+            self.location = self.profile.get_location()
+            self.website = self.profile.get_website()
+            self.watchlist_length = self.profile.get_watchlist_length()
+            self.stats = self.profile.get_stats()
+            self.favorites = self.profile.get_favorites()
+            self.avatar = self.profile.get_avatar()
+            self.backdrop = self.profile.get_backdrop()
+        except AccessDeniedError:
+            self.profile = None
+            self.id = None
+            self.badge = None
+            self.display_name = self.username
+            self.bio = None
+            self.location = None
+            self.website = None
+            self.watchlist_length = None
+            self.stats = {}
+            self.favorites = None
+            self.avatar = None
+            self.backdrop = None
 
     @staticmethod
     def extract_username(target) -> str:

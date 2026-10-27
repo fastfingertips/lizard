@@ -79,12 +79,13 @@ def _build_list_options(user_instance, user_lists, username):
     is_hq_user = getattr(user_instance, "badge", None) == "HQ"
     options = {}
 
-    if (
-        not is_hq_user
-        and user_instance.watchlist_length
-        and user_instance.watchlist_length > 0
-    ):
-        options[f"Watchlist ({user_instance.watchlist_length} movies)"] = (
+    if not is_hq_user and user_instance.watchlist_length != 0:
+        count_suffix = (
+            f" ({user_instance.watchlist_length} movies)"
+            if user_instance.watchlist_length
+            else ""
+        )
+        options[f"Watchlist{count_suffix}"] = (
             f"https://letterboxd.com/{username}/watchlist/"
         )
 
