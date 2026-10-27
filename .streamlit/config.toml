@@ -6,3 +6,6 @@ textColor="#d8e0e8"
 font="serif"
 [client]
 showErrorDetails = false
+
+[server]
+runOnSave = true

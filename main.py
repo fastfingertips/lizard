@@ -178,7 +178,11 @@ def determine_mode(user_input):
             messages.invalid_input()
             st.stop()
 
-        list_mode(processed_url)
+        if "/watchlist/" in processed_url or processed_url.endswith("/watchlist/"):
+            url_info = Input.parse_letterboxd_url(processed_url)
+            watchlist_mode(None, url_info["username"])
+        else:
+            list_mode(processed_url)
 
 
 if __name__ == "__main__":

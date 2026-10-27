@@ -76,13 +76,10 @@ class Input:
 
         def clean_slashes(data):
             """Remove leading and trailing slashes"""
+            data = data.strip("/")
             if len(data) <= 2:
                 st.error("Data is too short.")
                 return None
-            if data[0] == "/":
-                data = data[1:]
-            if data[-1] == "/":
-                data = data[:-1]
             return data
 
         def parse_data_blocks(data):
@@ -132,6 +129,9 @@ class Input:
             if not username or not data_blocks:
                 return None
 
+            if data_blocks[0] == "watchlist":
+                return f"{DOMAIN}/{username}/watchlist/"
+
             # Extract list slug using nested function
             list_slug, remaining_blocks = extract_list_slug(data_blocks)
 
@@ -145,7 +145,6 @@ class Input:
                     st.error("Username or list title is empty.")
             except Exception as e:
                 st.error(e)
-                pass
         else:
             # Username mode
             return f"{DOMAIN}/{data}/"
@@ -156,7 +155,7 @@ class Input:
     def parse_letterboxd_url(url: str) -> dict:
         """Parse Letterboxd URL and extract components"""
         if "/watchlist" in url:
-            username = extract_path_segment(url, after="letterboxd.com/")
+            username = extract_path_segment(url, after="letterboxd.com/", before="/")
             if username:
                 return {
                     "username": username,

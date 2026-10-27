@@ -13,7 +13,9 @@ class WatchList(Watchlist):
         elif hasattr(target, "username") and target.username:
             user = target.username
         elif isinstance(target, str) and "letterboxd.com" in target:
-            extracted = extract_path_segment(target, after="letterboxd.com/")
+            extracted = extract_path_segment(
+                target, after="letterboxd.com/", before="/"
+            )
             user = extracted if extracted else target
         else:
             user = str(target)
