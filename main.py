@@ -17,9 +17,7 @@ def watchlist_mode(user_instance, username):
 
     def create_watchlist(username):
         """Create WatchList instance"""
-        watchlist_url = f"https://letterboxd.com/{username}/watchlist/"
-        url_obj = Url(watchlist_url)
-        return WatchList(url_obj, username)
+        return WatchList(username)
 
     def load_movies(watchlist):
         """Load movies from watchlist with spinner"""
@@ -115,7 +113,7 @@ def username_mode(username):  # noqa: C901
             else:
                 list_mode(selected_url)
 
-    is_hq_user = user_instance.is_hq
+    is_hq_user = getattr(user_instance, "badge", None) == "HQ"
     watchlist_options = get_watchlist(is_hq_user, user_instance, username)
     regular_list_options = get_lists(user_lists)
     has_watchlist_flag = has_watchlist(watchlist_options)
@@ -192,7 +190,7 @@ def determine_mode(user_input):
     else:
         try:
             if user_input.is_url:
-                processed_url = user_input.data
+                processed_url = user_input.data.rstrip("/") + "/"
             else:
                 processed_url = user_input.convert_to_url(user_input.data)
 

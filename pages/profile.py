@@ -36,7 +36,12 @@ def create_user_header(user_instance):
             st.image("https://via.placeholder.com/200", caption="Profile Picture")
 
     with col2:
-        st.markdown(f"**{user_instance.display_name}**")
+        badge_text = (
+            f" `[{user_instance.badge.upper()}]`"
+            if getattr(user_instance, "badge", None)
+            else ""
+        )
+        st.markdown(f"**{user_instance.display_name}**{badge_text}")
         st.markdown(f"Username: @{user_instance.username}")
 
         if user_instance.bio:
