@@ -1,13 +1,9 @@
 import streamlit as st
 from letterboxdpy.constants.project import LIST_COLUMNS, WATCHLIST_COLUMNS
-from letterboxdpy.core.scraper import parse_url
-from letterboxdpy.pages.user_list import extract_list_meta
 from letterboxdpy.user import User
-from letterboxdpy.utils.utils_parser import is_list
 
 from models.config import Page
 from models.manager import Input
-from models.url import Url
 from models.userlist import UserList
 from models.watchlist import WatchList
 from widgets import display, messages, selectors
@@ -57,7 +53,7 @@ def watchlist_mode(user_instance, username):
         handle_error(e)
 
 
-def username_mode(username):  # noqa: C901
+def username_mode(username):
     # Early validation - fail fast
     try:
         user_instance = User(username)
@@ -90,14 +86,6 @@ def username_mode(username):  # noqa: C901
                 options[display_name] = list_data["url"]
         return options
 
-    def has_watchlist(watchlist_options):
-        """Check if watchlist is available"""
-        return len(watchlist_options) > 0
-
-    def has_lists(regular_list_options):
-        """Check if regular lists are available"""
-        return len(regular_list_options) > 0
-
     def handle_list_selection(list_options, user_instance, username):
         """Handle list selection and navigation"""
         selected_list = st.selectbox(
@@ -116,8 +104,8 @@ def username_mode(username):  # noqa: C901
     is_hq_user = getattr(user_instance, "badge", None) == "HQ"
     watchlist_options = get_watchlist(is_hq_user, user_instance, username)
     regular_list_options = get_lists(user_lists)
-    has_watchlist_flag = has_watchlist(watchlist_options)
-    has_regular_lists_flag = has_lists(regular_list_options)
+    has_watchlist_flag = bool(watchlist_options)
+    has_regular_lists_flag = bool(regular_list_options)
     list_options = {**watchlist_options, **regular_list_options}
 
     if list_options:
@@ -138,52 +126,32 @@ def username_mode(username):  # noqa: C901
 
 
 def list_mode(processed_input):
-    # Early validation - fail fast
-    url_dom = parse_url(processed_input)
-    is_list_result = is_list(url_dom)
-
-    if not is_list_result:
+    try:
+        url_info = Input.parse_letterboxd_url(processed_input)
+        user_list = UserList(url_info["username"], url_info["slug"])
+    except Exception:
         messages.invalid_list_url()
         st.stop()
-
-    # Nested functions after validation
-    def create_list(url_dom, processed_input):
-        """Create UserList instance from validated URL"""
-        list_meta = extract_list_meta(url_dom, processed_input)
-        url_info = Input.parse_letterboxd_url(list_meta["url"])
-
-        user_list = UserList(
-            Url(list_meta["url"], url_dom), url_info["username"], url_info["slug"]
-        )
-
-        return user_list, list_meta
 
     def load_movies(user_list):
         """Load movies from user list with spinner."""
         with st.spinner("Loading list data..."):
             return user_list.movies
 
-    def display_content(user_list, list_meta):
+    def display_content(user_list):
         """Display list details and movies if available"""
         display.object_details(user_list)
 
-        if list_meta["is_available"]:
-            try:
-                movies = load_movies(user_list)
-                csv_format = st.session_state.get("csv_format", "Letterboxd")
-                display.movies_dataframe(
-                    movies, columns=LIST_COLUMNS, csv_format=csv_format
-                )
-            except Exception as e:
-                messages.error(str(e))
-        else:
-            messages.list_unavailable()
+        try:
+            movies = load_movies(user_list)
+            csv_format = st.session_state.get("csv_format", "Letterboxd")
+            display.movies_dataframe(
+                movies, columns=LIST_COLUMNS, csv_format=csv_format
+            )
+        except Exception as e:
+            messages.error(str(e))
 
-    # show content
-    user_list, list_meta = create_list(url_dom, processed_input)
-    display_content(user_list, list_meta)
-
-    # show button to get again
+    display_content(user_list)
     st.button("Get again.")
 
 

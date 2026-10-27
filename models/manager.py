@@ -9,7 +9,7 @@ import streamlit as st
 from fastfingertips.url_utils import extract_path_segment
 from fastfingertips.url_utils import is_valid_url as is_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_url import is_short_url, parse_list_url
+from letterboxdpy.utils.utils_url import parse_list_url
 
 
 class Input:
@@ -22,16 +22,8 @@ class Input:
         self.type = None
         self.length = None
         self.is_url = None
-        self.is_short_url = None
-
-        self.is_alpha = None
         self.is_username = None
-        self.is_whitespace = None
         self.is_empty = None
-
-        self.is_numeric = None
-        self.is_negative = None
-        self.is_positive = None
 
     def process_data(self):
         query_data = st.query_params.to_dict()
@@ -50,16 +42,8 @@ class Input:
         self.length = len(input_data) if input_data else 0
 
         self.is_empty = not self.data
-        self.is_whitespace = self.data and self.data.isspace()
-        self.is_alpha = self.data and self.data.isalpha()
-        self.is_numeric = self.data and self.data.isdigit()
-        self.is_username = self.data and "/" not in self.data
-
-        self.is_negative = self.is_numeric and int(self.data) < 0
-        self.is_positive = self.is_numeric and int(self.data) > 0
-
-        self.is_url = not self.is_username and is_url(self.data)
-        self.is_short_url = not self.is_username and is_short_url(self.data)
+        self.is_username = bool(self.data and "/" not in self.data)
+        self.is_url = bool(not self.is_username and is_url(self.data))
 
     @staticmethod
     def convert_to_url(data):  # noqa: C901
@@ -118,18 +102,11 @@ class Input:
 
             def handle_list_keyword():
                 """Handle when first block is 'list'"""
-                if data_blocks[1] == "list" or data_blocks[1] == "detail":
-                    list_slug = data_blocks[1]
-                    remaining = data_blocks[2:]
-                    if remaining and remaining[0] == "detail":
-                        remaining = remaining[1:]
-                    return list_slug, remaining
-                else:
-                    list_slug = data_blocks[1]
-                    remaining = data_blocks[2:]
-                    if remaining and remaining[0] == "detail":
-                        remaining = remaining[1:]
-                    return list_slug, remaining
+                list_slug = data_blocks[1]
+                remaining = data_blocks[2:]
+                if remaining and remaining[0] == "detail":
+                    remaining = remaining[1:]
+                return list_slug, remaining
 
             def handle_detail_keyword():
                 """Handle when first block is 'detail'"""
