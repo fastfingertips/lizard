@@ -4,5 +4,5 @@ altair>=6.3.0,<7
 curl-cffi>=0.15.0
 letterboxdpy @ git+https://github.com/fastfingertips/letterboxdpy@79bbf4b
 fastfingertips>=0.1.4
-ruff>=0.17.2
+ruff>=0.17.3
 pre-commit>=4.7.0
