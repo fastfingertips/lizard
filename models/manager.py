@@ -5,6 +5,8 @@ Handles different types of user input (usernames, URLs, patterns) and
 provides validation, type detection, and URL conversion utilities.
 """
 
+import re
+
 import streamlit as st
 from curl_cffi import requests as curl_requests
 from fastfingertips.url_utils import extract_path_segment
@@ -173,10 +175,19 @@ class Input:
                 }
             raise ValueError(f"Invalid watchlist URL format: {url}")
         elif "/list/" in url:
-            username, slug = parse_list_url(url)
+            # Match username, slug, and optional filter path (e.g. genre/comedy/)
+            match = re.search(r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", url)
+            if match:
+                username, slug = match.group(1), match.group(2)
+                raw_filters = match.group(3)
+                filters = raw_filters.strip("/") if raw_filters else ""
+            else:
+                username, slug = parse_list_url(url)
+                filters = ""
             return {
                 "username": username,
                 "slug": slug,
+                "filters": filters,
                 "type": "user_list",
                 "url": url,
             }

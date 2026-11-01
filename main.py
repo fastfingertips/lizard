@@ -78,13 +78,12 @@ def _build_list_options(user_instance, user_lists, username):
     is_hq_user = getattr(user_instance, "badge", None) == "HQ"
     options = {}
 
-    if not is_hq_user and user_instance.watchlist_length != 0:
-        count_suffix = (
-            f" ({user_instance.watchlist_length} movies)"
-            if user_instance.watchlist_length
-            else ""
-        )
-        options[f"Watchlist{count_suffix}"] = (
+    if (
+        not is_hq_user
+        and user_instance.watchlist_length is not None
+        and user_instance.watchlist_length > 0
+    ):
+        options[f"Watchlist ({user_instance.watchlist_length} movies)"] = (
             f"https://letterboxd.com/{username}/watchlist/"
         )
 
@@ -153,7 +152,11 @@ def username_mode(username):
 def list_mode(processed_input):
     try:
         url_info = Input.parse_letterboxd_url(processed_input)
-        user_list = UserList(url_info["username"], url_info["slug"])
+        user_list = UserList(
+            url_info["username"],
+            url_info["slug"],
+            filters=url_info.get("filters", ""),
+        )
     except ResourceNotFoundError:
         messages.list_unavailable()
         st.stop()
