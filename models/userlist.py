@@ -25,7 +25,11 @@ class UserList(List):
             self.pages.list.url = self.url
             self._movies = None
 
-    def fetch_movies(self, on_progress: Callable | None = None) -> list:
+    def fetch_movies(
+        self,
+        on_progress: Callable | None = None,
+        max_pages: int | None = None,
+    ) -> list:
         """Scrape list movies with progress callback and initial DOM reuse."""
         if self._movies is None:
             initial_dom = None if self.filters else self.pages.list.dom
@@ -37,6 +41,7 @@ class UserList(List):
                 initial_dom=initial_dom,
                 total_count=total_count,
                 on_progress=on_progress,
+                max_pages=max_pages,
             )
         return self._movies
 

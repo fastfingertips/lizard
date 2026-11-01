@@ -56,7 +56,11 @@ class WatchList(Watchlist):
             return int(count_span.text.split()[0].replace(",", ""))
         return 0
 
-    def fetch_movies(self, on_progress: Callable | None = None) -> list:
+    def fetch_movies(
+        self,
+        on_progress: Callable | None = None,
+        max_pages: int | None = None,
+    ) -> list:
         """Scrape watchlist movies with progress callback and initial DOM reuse."""
         if self._movies is None:
             self._movies = paginate_ranked_movies(
@@ -66,6 +70,7 @@ class WatchList(Watchlist):
                 initial_dom=self._initial_dom,
                 total_count=self.count,
                 on_progress=on_progress,
+                max_pages=max_pages,
             )
         return self._movies
 

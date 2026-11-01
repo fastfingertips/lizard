@@ -63,6 +63,7 @@ def paginate_ranked_movies(
     initial_dom=None,
     total_count: int | None = None,
     on_progress: Callable | None = None,
+    max_pages: int | None = None,
 ) -> list:
     """
     Scrape paginated Letterboxd movie collections with progress reporting.
@@ -74,6 +75,7 @@ def paginate_ranked_movies(
         initial_dom: Optional pre-fetched DOM for page 1 to avoid duplicate requests.
         total_count: Expected total movie count for progress percentage calculation.
         on_progress: Optional callback(current, total, page, items_per_page).
+        max_pages: Optional maximum number of pages to fetch.
 
     Returns:
         List of ranked movie dictionaries formatted for DataFrame display.
@@ -83,11 +85,12 @@ def paginate_ranked_movies(
     page = 1
 
     logger.info(
-        "[PAGINATE:START] base_url=%s expected_total=%s items_per_page=%d cached_p1=%s",
+        "[PAGINATE:START] base_url=%s expected_total=%s items_per_page=%d cached_p1=%s max_pages=%s",
         base_url,
         total_count,
         items_per_page,
         initial_dom is not None,
+        max_pages,
     )
 
     while True:
@@ -118,7 +121,7 @@ def paginate_ranked_movies(
         if on_progress is not None:
             on_progress(len(collected), total_count, page, items_per_page)
 
-        if len(scraped) < items_per_page:
+        if len(scraped) < items_per_page or (max_pages and page >= max_pages):
             break
 
         page += 1
