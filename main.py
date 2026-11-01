@@ -103,6 +103,39 @@ def _build_list_options(user_instance, user_lists, username):
     return is_hq_user, options
 
 
+def _inject_collection_accents(has_films: bool, has_watchlist: bool):
+    """Apply industry-standard brand accent styles to core Letterboxd collections."""
+    css_rules = []
+    idx = 2
+
+    if has_films:
+        css_rules.append(
+            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({idx}) '
+            "{ border-left: 3px solid #00e054 !important; "
+            "background-color: rgba(0, 224, 84, 0.08) !important; font-weight: 500 !important; }"
+        )
+        idx += 1
+
+    if has_watchlist:
+        css_rules.append(
+            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({idx}) '
+            "{ border-left: 3px solid #40bcf4 !important; "
+            "background-color: rgba(64, 188, 244, 0.08) !important; font-weight: 500 !important; }"
+        )
+        idx += 1
+
+    if has_films or has_watchlist:
+        last = idx - 1
+        css_rules.append(
+            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({last}) '
+            "{ border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; "
+            "margin-bottom: 4px !important; }"
+        )
+
+    if css_rules:
+        st.markdown(f"<style>{''.join(css_rules)}</style>", unsafe_allow_html=True)
+
+
 def username_mode(username):
     # Early validation - fail fast
     try:
@@ -146,6 +179,7 @@ def username_mode(username):
     )
 
     if list_options:
+        _inject_collection_accents(has_films, has_watchlist)
         if has_watchlist and not has_regular_lists and not has_films:
             messages.only_watchlist(username)
         elif is_hq_user and has_regular_lists:
