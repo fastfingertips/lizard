@@ -8,11 +8,15 @@ provides validation, type detection, and URL conversion utilities.
 import re
 
 import streamlit as st
-from curl_cffi import requests as curl_requests
 from fastfingertips.url_utils import extract_path_segment
 from fastfingertips.url_utils import is_valid_url as is_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_url import is_short_url, normalize_sort_by, parse_list_url
+from letterboxdpy.utils.utils_url import (
+    is_short_url,
+    normalize_sort_by,
+    parse_list_url,
+    resolve_short_url,
+)
 
 
 class Input:
@@ -164,13 +168,7 @@ class Input:
     def parse_letterboxd_url(url: str) -> dict:
         """Parse Letterboxd URL and extract components"""
         if is_short_url(url):
-            resp = curl_requests.get(
-                url.rstrip("/"),
-                allow_redirects=False,
-                impersonate="chrome124",
-                timeout=10,
-            )
-            url = resp.headers.get("location") or url
+            url = resolve_short_url(url)
         url = url.rstrip("/") + "/"
 
         if "/watchlist" in url:
