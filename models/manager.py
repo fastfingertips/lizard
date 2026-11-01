@@ -14,6 +14,7 @@ from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.utils.utils_url import (
     is_short_url,
     normalize_sort_by,
+    parse_films_url,
     parse_list_url,
     resolve_short_url,
 )
@@ -185,19 +186,17 @@ class Input:
                 }
             raise ValueError(f"Invalid watchlist URL format: {url}")
         elif "/films" in url and "/list/" not in url:
-            username = extract_path_segment(url, after="letterboxd.com/", before="/")
-            match = re.search(r"letterboxd\.com/[^/]+/films(?:/(.*))?", url)
-            raw_filters = match.group(1) if match else ""
-            filters = raw_filters.strip("/") if raw_filters else ""
-            if username:
-                return {
-                    "username": username,
-                    "slug": "films",
-                    "filters": filters,
-                    "type": "user_films",
-                    "url": url,
-                }
-            raise ValueError(f"Invalid films URL format: {url}")
+            username, filters = parse_films_url(url)
+            sort_match = re.search(r"/films/by/([^/?#]+)/?", url)
+            sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
+            return {
+                "username": username,
+                "slug": "films",
+                "filters": filters,
+                "sort_by": sort_by,
+                "type": "user_films",
+                "url": url,
+            }
         elif "/list/" in url:
             # Match username, slug, and optional filter path (e.g. genre/comedy/)
             match = re.search(r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", url)

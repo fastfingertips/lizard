@@ -309,6 +309,7 @@ def films_mode(processed_input):
         lambda: UserFilms(
             url_info["username"],
             filters=url_info.get("filters", ""),
+            sort_by=url_info.get("sort_by"),
         ),
         "Loading films data...",
     )
