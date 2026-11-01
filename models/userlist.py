@@ -9,8 +9,14 @@ from models.paginator import paginate_ranked_movies
 class UserList(List):
     """UserList class for handling Letterboxd user lists with filter support."""
 
-    def __init__(self, username: str, slug: str, filters: str = ""):
-        super().__init__(username, slug)
+    def __init__(
+        self,
+        username: str,
+        slug: str,
+        filters: str = "",
+        sort_by: str | None = None,
+    ):
+        super().__init__(username, slug, sort_by=sort_by)
         self.filters = ""
         if filters:
             clean_filters = filters.strip("/")

@@ -24,10 +24,10 @@ def _fetch_with_progress(collection, desc: str, total: int | None = None) -> lis
         return collection.fetch_movies(on_progress=tracker.update)
 
 
-def watchlist_mode(user_instance, username):
+def watchlist_mode(user_instance, username, sort_by: str | None = None):
     def create_watchlist(username):
         """Create WatchList instance"""
-        return WatchList(user_instance, username)
+        return WatchList(user_instance, username, sort_by=sort_by)
 
     def load_movies(watchlist):
         """Load movies from watchlist with progress bar"""
@@ -297,6 +297,7 @@ def list_mode(processed_input):
             url_info["username"],
             url_info["slug"],
             filters=url_info.get("filters", ""),
+            sort_by=url_info.get("sort_by"),
         ),
         "Loading list data...",
     )
@@ -344,7 +345,7 @@ def determine_mode(user_input):
 
         url_type = url_info.get("type")
         if url_type == "watchlist":
-            watchlist_mode(None, url_info["username"])
+            watchlist_mode(None, url_info["username"], sort_by=url_info.get("sort_by"))
         elif url_type == "user_films":
             films_mode(url_info.get("url", processed_url))
         elif url_type == "user":

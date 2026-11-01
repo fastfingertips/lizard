@@ -12,7 +12,7 @@ from curl_cffi import requests as curl_requests
 from fastfingertips.url_utils import extract_path_segment
 from fastfingertips.url_utils import is_valid_url as is_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_url import is_short_url, parse_list_url
+from letterboxdpy.utils.utils_url import is_short_url, normalize_sort_by, parse_list_url
 
 
 class Input:
@@ -175,10 +175,13 @@ class Input:
 
         if "/watchlist" in url:
             username = extract_path_segment(url, after="letterboxd.com/", before="/")
+            sort_match = re.search(r"/watchlist/by/([^/?#]+)/?", url)
+            sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
             if username:
                 return {
                     "username": username,
                     "slug": "watchlist",
+                    "sort_by": sort_by,
                     "type": "watchlist",
                     "url": url,
                 }
@@ -207,10 +210,13 @@ class Input:
             else:
                 username, slug = parse_list_url(url)
                 filters = ""
+            sort_match = re.search(r"/by/([^/?#]+)/?", url)
+            sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
             return {
                 "username": username,
                 "slug": slug,
                 "filters": filters,
+                "sort_by": sort_by,
                 "type": "user_list",
                 "url": url,
             }

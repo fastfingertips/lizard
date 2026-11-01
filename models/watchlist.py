@@ -10,7 +10,12 @@ from models.paginator import fetch_dom_with_retry, paginate_ranked_movies
 class WatchList(Watchlist):
     """WatchList class for handling Letterboxd user watchlists."""
 
-    def __init__(self, target, username: str | None = None):
+    def __init__(
+        self,
+        target,
+        username: str | None = None,
+        sort_by: str | None = None,
+    ):
         """Initialize WatchList with username or User object, reusing cached count/DOM."""
         if username:
             user = username
@@ -25,7 +30,8 @@ class WatchList(Watchlist):
             user = str(target)
 
         self.username = user
-        self.pages = self.WatchlistPages(self.username)
+        self.sort_by = sort_by
+        self.pages = self.WatchlistPages(self.username, sort_by=self.sort_by)
         self.url = self.get_url()
         self._initial_dom = None
         self._movies = None
