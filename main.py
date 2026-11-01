@@ -108,27 +108,35 @@ def _inject_collection_accents(has_films: bool, has_watchlist: bool):
     css_rules = []
     idx = 2
 
+    def opt_sel(n):
+        return (
+            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({n}), '
+            f'div[data-testid="stSelectboxVirtualDropdown"] [role="listbox"] [role="option"]:nth-child({n})'
+        )
+
     if has_films:
         css_rules.append(
-            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({idx}) '
-            "{ border-left: 3px solid #00e054 !important; "
-            "background-color: rgba(0, 224, 84, 0.08) !important; font-weight: 500 !important; }"
+            f"{opt_sel(idx)} {{ "
+            "border-left: 3px solid #00e054 !important; "
+            "background-color: rgba(0, 224, 84, 0.08) !important; "
+            "font-weight: 500 !important; }"
         )
         idx += 1
 
     if has_watchlist:
         css_rules.append(
-            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({idx}) '
-            "{ border-left: 3px solid #40bcf4 !important; "
-            "background-color: rgba(64, 188, 244, 0.08) !important; font-weight: 500 !important; }"
+            f"{opt_sel(idx)} {{ "
+            "border-left: 3px solid #40bcf4 !important; "
+            "background-color: rgba(64, 188, 244, 0.08) !important; "
+            "font-weight: 500 !important; }"
         )
         idx += 1
 
     if has_films or has_watchlist:
         last = idx - 1
         css_rules.append(
-            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({last}) '
-            "{ border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; "
+            f"{opt_sel(last)} {{ "
+            "border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; "
             "margin-bottom: 4px !important; }"
         )
 
