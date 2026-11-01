@@ -39,9 +39,23 @@ class WatchList(Watchlist):
         cached_len = getattr(target, "watchlist_length", None)
         if cached_len is not None:
             self.count = cached_len
+            self.last_page = (
+                (self.count + self.pages.watchlist.FILMS_PER_PAGE - 1)
+                // self.pages.watchlist.FILMS_PER_PAGE
+                if self.count > 0
+                else 0
+            )
+            self.total_pages = self.last_page
         else:
             self._initial_dom = fetch_dom_with_retry(self.url)
             self.count = self._extract_count_from_dom(self._initial_dom)
+            self.last_page = (
+                (self.count + self.pages.watchlist.FILMS_PER_PAGE - 1)
+                // self.pages.watchlist.FILMS_PER_PAGE
+                if self.count > 0
+                else 0
+            )
+            self.total_pages = self.last_page
 
     @staticmethod
     def _extract_count_from_dom(dom) -> int:
