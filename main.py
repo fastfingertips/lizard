@@ -13,6 +13,14 @@ from models.userfilms import UserFilms
 from models.userlist import UserList
 from models.watchlist import WatchList
 from widgets import display, messages, selectors
+from widgets.progress import ProgressTracker
+
+
+def _fetch_with_progress(collection, desc: str, total: int | None = None) -> list:
+    """Fetch collection movies while rendering a real-time stqdm-style progress bar."""
+    resolved_total = total if total is not None else getattr(collection, "count", None)
+    with ProgressTracker(desc=desc, total=resolved_total, unit="movies") as tracker:
+        return collection.fetch_movies(on_progress=tracker.update)
 
 
 def watchlist_mode(user_instance, username):
@@ -21,9 +29,8 @@ def watchlist_mode(user_instance, username):
         return WatchList(username)
 
     def load_movies(watchlist):
-        """Load movies from watchlist with spinner"""
-        with st.spinner("Loading watchlist data..."):
-            return watchlist.movies
+        """Load movies from watchlist with progress bar"""
+        return _fetch_with_progress(watchlist, "Loading watchlist data...")
 
     def display_movies(movies, user_instance, username):
         """Display watchlist movies or appropriate message"""
@@ -147,8 +154,13 @@ def _inject_collection_accents(has_films: bool, has_watchlist: bool):
 def username_mode(username):
     # Early validation - fail fast
     try:
-        user_instance = User(username)
-        user_lists = user_instance.get_lists()
+        with st.spinner(f"Loading profile for {username}..."):
+            user_instance = User(username)
+        total_lists = user_instance.stats.get("lists") if user_instance.stats else None
+        with ProgressTracker(
+            desc="Loading user lists...", total=total_lists, unit="lists"
+        ) as tracker:
+            user_lists = user_instance.get_lists(on_progress=tracker.update)
         display.object_details(user_instance)
     except ResourceNotFoundError:
         messages.user_not_found(username)
@@ -205,11 +217,16 @@ def username_mode(username):
 
 
 def _render_movie_collection(collection_instance, spinner_text):
-    """Render details, loading spinner, and dataframe for a movie collection."""
+    """Render details, progress bar, and dataframe for a movie collection."""
     display.object_details(collection_instance)
     try:
-        with st.spinner(spinner_text):
-            movies = collection_instance.movies
+        total = (
+            0
+            if getattr(collection_instance, "filters", None)
+            and isinstance(collection_instance, UserList)
+            else None
+        )
+        movies = _fetch_with_progress(collection_instance, spinner_text, total=total)
         csv_format = st.session_state.get("csv_format", "Letterboxd")
         display.movies_dataframe(movies, columns=LIST_COLUMNS, csv_format=csv_format)
     except Exception as e:

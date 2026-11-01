@@ -3,6 +3,7 @@
 import contextlib
 import re
 import time
+from collections.abc import Callable
 
 from fastfingertips.url_utils import extract_path_segment
 from letterboxdpy.constants.project import DOMAIN
@@ -10,6 +11,8 @@ from letterboxdpy.core.exceptions import AccessDeniedError
 from letterboxdpy.core.scraper import Scraper, parse_url
 from letterboxdpy.pages.user_profile import UserProfile
 from letterboxdpy.utils.lists_extractor import ListsExtractor
+
+from models.paginator import fetch_dom_with_retry
 
 # Clean up HTTP/2 protocol violation and set modern browser navigation headers
 Scraper.headers.pop("connection", None)
@@ -138,9 +141,12 @@ class User:
 
         return raw.strip("/").lower()
 
-    def get_lists(self, max_lists: int | None = None) -> dict:
+    def get_lists(
+        self, max_lists: int | None = None, on_progress: Callable | None = None
+    ) -> dict:
         """Fetch user lists with canonical URLs, retry backoff, and polite pacing."""
         data = {"limit": False, "count": 0, "last_page": 1, "lists": {}}
+        total_lists = self.stats.get("lists") if self.stats else None
         page = 1
 
         while True:
@@ -149,16 +155,7 @@ class User:
                 if page == 1
                 else f"{DOMAIN}/{self.username}/lists/page/{page}/"
             )
-            dom = None
-            for attempt in range(3):
-                try:
-                    dom = parse_url(page_url)
-                    break
-                except Exception:
-                    if attempt == 2:
-                        break
-                    time.sleep(1.0 * (attempt + 1))
-
+            dom = fetch_dom_with_retry(page_url)
             if not dom:
                 break
 
@@ -173,6 +170,9 @@ class User:
                 if max_lists and len(data["lists"]) >= max_lists:
                     data["limit"] = True
                     break
+
+            if on_progress is not None:
+                on_progress(len(data["lists"]), total_lists, page, 12)
 
             if data["limit"] or len(articles) < 12:
                 break
