@@ -107,6 +107,13 @@ class User:
                 if digits:
                     self.watchlist_length = int(digits.group(0))
 
+    @property
+    def films_count(self) -> int | None:
+        """Get total watched films count from profile stats."""
+        if self.stats and "films" in self.stats:
+            return self.stats["films"]
+        return None
+
     @staticmethod
     def extract_username(target) -> str:
         """Extract and sanitize username from string, URL, or object."""

@@ -75,9 +75,15 @@ def _handle_access_denied(username):
 
 
 def _build_list_options(user_instance, user_lists, username):
-    """Build unified watchlist and user list options dictionary"""
+    """Build unified films, watchlist, and user list options dictionary"""
     is_hq_user = getattr(user_instance, "badge", None) == "HQ"
     options = {}
+
+    films_count = getattr(user_instance, "films_count", None)
+    if films_count is not None and films_count > 0:
+        options[f"Films ({films_count} movies)"] = (
+            f"https://letterboxd.com/{username}/films/"
+        )
 
     if (
         not is_hq_user
@@ -126,15 +132,21 @@ def username_mode(username):
             selected_url = list_options[selected_list]
             if "/watchlist/" in selected_url:
                 watchlist_mode(user_instance, username)
+            elif "/films/" in selected_url:
+                films_mode(selected_url)
             else:
                 list_mode(selected_url)
 
     is_hq_user, list_options = _build_list_options(user_instance, user_lists, username)
+    has_films = any("/films/" in url for url in list_options.values())
     has_watchlist = any("/watchlist/" in url for url in list_options.values())
-    has_regular_lists = any("/watchlist/" not in url for url in list_options.values())
+    has_regular_lists = any(
+        "/watchlist/" not in url and "/films/" not in url
+        for url in list_options.values()
+    )
 
     if list_options:
-        if has_watchlist and not has_regular_lists:
+        if has_watchlist and not has_regular_lists and not has_films:
             messages.only_watchlist(username)
         elif is_hq_user and has_regular_lists:
             messages.hq_user_status(username)
