@@ -1,7 +1,7 @@
 """
 Shared resilient pagination and DOM fetching utilities for Letterboxd scrapers.
 
-Provides exponential retry backoff, polite inter-page pacing, initial DOM reuse,
+Provides exponential retry backoff, adaptive inter-page pacing, initial DOM reuse,
 and real-time progress callback hooks.
 """
 
@@ -12,13 +12,44 @@ from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.utils.utils_csv import transform_to_ranked_movies
 from letterboxdpy.utils.utils_url import get_page_url
 
+from models.logger import logger
+
+MIN_PAGE_INTERVAL = 0.25
+
+
+def pace_request(step_start: float, min_interval: float = MIN_PAGE_INTERVAL) -> None:
+    """Ensure a minimum polite interval between network requests."""
+    elapsed = time.monotonic() - step_start
+    remaining = min_interval - elapsed
+    if remaining > 0:
+        time.sleep(remaining)
+
 
 def fetch_dom_with_retry(url: str, retries: int = 3):
-    """Fetch and parse page DOM with exponential retry backoff."""
+    """Fetch and parse page DOM with canonical trailing slash and retry backoff."""
+    url = url if url.endswith("/") or "?" in url else f"{url}/"
     for attempt in range(retries):
+        t0 = time.monotonic()
         try:
-            return parse_url(url)
-        except Exception:
+            dom = parse_url(url)
+            elapsed_ms = int((time.monotonic() - t0) * 1000)
+            logger.info(
+                "[FETCH] url=%s attempt=%d elapsed_ms=%d",
+                url,
+                attempt + 1,
+                elapsed_ms,
+            )
+            return dom
+        except Exception as exc:
+            elapsed_ms = int((time.monotonic() - t0) * 1000)
+            logger.warning(
+                "[FETCH:RETRY] url=%s attempt=%d/%d elapsed_ms=%d err=%s",
+                url,
+                attempt + 1,
+                retries,
+                elapsed_ms,
+                exc,
+            )
             if attempt == retries - 1:
                 break
             time.sleep(1.0 * (attempt + 1))
@@ -47,13 +78,24 @@ def paginate_ranked_movies(
     Returns:
         List of ranked movie dictionaries formatted for DataFrame display.
     """
+    start_time = time.monotonic()
     collected = {}
     page = 1
 
+    logger.info(
+        "[PAGINATE:START] base_url=%s expected_total=%s items_per_page=%d cached_p1=%s",
+        base_url,
+        total_count,
+        items_per_page,
+        initial_dom is not None,
+    )
+
     while True:
+        step_start = time.monotonic()
+        used_cached = page == 1 and initial_dom is not None
         dom = (
             initial_dom
-            if (page == 1 and initial_dom is not None)
+            if used_cached
             else fetch_dom_with_retry(get_page_url(base_url, page))
         )
         if not dom:
@@ -64,6 +106,14 @@ def paginate_ranked_movies(
             break
 
         collected.update(scraped)
+        logger.info(
+            "[PAGINATE:PAGE] page=%d page_items=%d collected=%d/%s cached=%s",
+            page,
+            len(scraped),
+            len(collected),
+            total_count or "?",
+            used_cached,
+        )
 
         if on_progress is not None:
             on_progress(len(collected), total_count, page, items_per_page)
@@ -72,6 +122,15 @@ def paginate_ranked_movies(
             break
 
         page += 1
-        time.sleep(0.5)
+        if not used_cached:
+            pace_request(step_start)
 
+    total_ms = int((time.monotonic() - start_time) * 1000)
+    logger.info(
+        "[PAGINATE:DONE] base_url=%s total_collected=%d pages=%d elapsed_ms=%d",
+        base_url,
+        len(collected),
+        page,
+        total_ms,
+    )
     return transform_to_ranked_movies(collected)

@@ -50,3 +50,7 @@ venv/
 
 # jscpd reports
 report/
+
+# Application logs
+logs/
+*.log

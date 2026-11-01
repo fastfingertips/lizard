@@ -165,9 +165,13 @@ class Input:
         """Parse Letterboxd URL and extract components"""
         if is_short_url(url):
             resp = curl_requests.get(
-                url, allow_redirects=False, impersonate="chrome124", timeout=10
+                url.rstrip("/"),
+                allow_redirects=False,
+                impersonate="chrome124",
+                timeout=10,
             )
             url = resp.headers.get("location") or url
+        url = url.rstrip("/") + "/"
 
         if "/watchlist" in url:
             username = extract_path_segment(url, after="letterboxd.com/", before="/")

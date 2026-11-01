@@ -7,6 +7,7 @@ from letterboxdpy.core.exceptions import (
 )
 
 from models.config import Page
+from models.logger import log_step, logger
 from models.manager import Input
 from models.user import User
 from models.userfilms import UserFilms
@@ -26,7 +27,7 @@ def _fetch_with_progress(collection, desc: str, total: int | None = None) -> lis
 def watchlist_mode(user_instance, username):
     def create_watchlist(username):
         """Create WatchList instance"""
-        return WatchList(username)
+        return WatchList(user_instance, username)
 
     def load_movies(watchlist):
         """Load movies from watchlist with progress bar"""
@@ -117,8 +118,10 @@ def _inject_collection_accents(has_films: bool, has_watchlist: bool):
 
     def opt_sel(n):
         return (
-            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({n}), '
-            f'div[data-testid="stSelectboxVirtualDropdown"] [role="listbox"] [role="option"]:nth-child({n})'
+            f'[data-testid="stSelectboxVirtualDropdown"] [role="option"][data-key="{n - 1}"], '
+            f'[data-testid="stSelectboxVirtualDropdown"] [role="option"]:not([data-key]):nth-child({n}), '
+            f'[data-testid="stSelectboxVirtualDropdown"] li:nth-child({n}), '
+            f'div[data-baseweb="popover"] ul[role="listbox"] li:nth-child({n})'
         )
 
     if has_films:
@@ -151,16 +154,47 @@ def _inject_collection_accents(has_films: bool, has_watchlist: bool):
         st.markdown(f"<style>{''.join(css_rules)}</style>", unsafe_allow_html=True)
 
 
+def _load_or_cache_user(username: str):
+    """Fetch user profile and list options once per session per username."""
+    cache = st.session_state.get("user_cache")
+    if cache and cache.get("username") == username:
+        logger.info("[CACHE:HIT] user_cache username=%s", username)
+        return cache["user"], cache["is_hq"], cache["options"]
+
+    logger.info("[CACHE:MISS] user_cache username=%s", username)
+    with (
+        log_step("USER_PROFILE", username=username),
+        st.spinner(f"Loading profile for {username}..."),
+    ):
+        user_instance = User(username)
+
+    total_lists = user_instance.stats.get("lists") if user_instance.stats else None
+    with (
+        log_step("USER_LISTS", username=username, expected_total=total_lists),
+        ProgressTracker(
+            desc="Loading user lists...", total=total_lists, unit="lists"
+        ) as tracker,
+    ):
+        user_lists = user_instance.get_lists(on_progress=tracker.update)
+
+    with log_step("BUILD_OPTIONS", username=username):
+        is_hq_user, list_options = _build_list_options(
+            user_instance, user_lists, username
+        )
+
+    st.session_state["user_cache"] = {
+        "username": username,
+        "user": user_instance,
+        "is_hq": is_hq_user,
+        "options": list_options,
+    }
+    return user_instance, is_hq_user, list_options
+
+
 def username_mode(username):
     # Early validation - fail fast
     try:
-        with st.spinner(f"Loading profile for {username}..."):
-            user_instance = User(username)
-        total_lists = user_instance.stats.get("lists") if user_instance.stats else None
-        with ProgressTracker(
-            desc="Loading user lists...", total=total_lists, unit="lists"
-        ) as tracker:
-            user_lists = user_instance.get_lists(on_progress=tracker.update)
+        user_instance, is_hq_user, list_options = _load_or_cache_user(username)
         display.object_details(user_instance)
     except ResourceNotFoundError:
         messages.user_not_found(username)
@@ -183,6 +217,12 @@ def username_mode(username):
 
         if selected_list and selected_list != "Choose a list...":
             selected_url = list_options[selected_list]
+            logger.info(
+                "[SELECTBOX] username=%s selected=%r url=%s",
+                username,
+                selected_list,
+                selected_url,
+            )
             if "/watchlist/" in selected_url:
                 watchlist_mode(user_instance, username)
             elif "/films/" in selected_url:
@@ -190,7 +230,6 @@ def username_mode(username):
             else:
                 list_mode(selected_url)
 
-    is_hq_user, list_options = _build_list_options(user_instance, user_lists, username)
     has_films = any("/films/" in url for url in list_options.values())
     has_watchlist = any("/watchlist/" in url for url in list_options.values())
     has_regular_lists = any(

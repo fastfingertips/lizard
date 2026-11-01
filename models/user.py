@@ -8,11 +8,11 @@ from collections.abc import Callable
 from fastfingertips.url_utils import extract_path_segment
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.core.exceptions import AccessDeniedError
-from letterboxdpy.core.scraper import Scraper, parse_url
+from letterboxdpy.core.scraper import Scraper
 from letterboxdpy.pages.user_profile import UserProfile
 from letterboxdpy.utils.lists_extractor import ListsExtractor
 
-from models.paginator import fetch_dom_with_retry
+from models.paginator import fetch_dom_with_retry, pace_request
 
 # Clean up HTTP/2 protocol violation and set modern browser navigation headers
 Scraper.headers.pop("connection", None)
@@ -27,23 +27,15 @@ Scraper.headers.update(
 )
 
 
-class Profile(UserProfile):
-    """UserProfile with canonical trailing slash URL."""
-
-    def __init__(self, username: str) -> None:
-        self.username = username
-        self.url = f"{DOMAIN}/{self.username}/"
-        self.dom = parse_url(self.url)
-
-
 class User:
     """User model representing a Letterboxd user in Lizard."""
 
     def __init__(self, target):
         self.username = self.extract_username(target)
         self.url = f"{DOMAIN}/{self.username}/"
+        self._initial_lists_dom = None
         try:
-            self.profile = Profile(self.username)
+            self.profile = UserProfile(self.username)
             self.id = self.profile.get_id()
             self.badge = self.profile.get_badge()
             self.display_name = self.profile.get_display_name()
@@ -74,8 +66,13 @@ class User:
         self.backdrop = None
 
         with contextlib.suppress(Exception):
-            lists_dom = parse_url(f"{DOMAIN}/{self.username}/lists/")
-            ph = lists_dom.find("section", class_="profile-header")
+            lists_dom = fetch_dom_with_retry(f"{DOMAIN}/{self.username}/lists/")
+            self._initial_lists_dom = lists_dom
+            ph = (
+                lists_dom.find("section", class_="profile-header")
+                if lists_dom
+                else None
+            )
             if ph:
                 h1 = ph.find("h1")
                 if h1:
@@ -103,8 +100,10 @@ class User:
                         self.id = int(segment.replace("/", ""))
 
         with contextlib.suppress(Exception):
-            wl_dom = parse_url(f"{DOMAIN}/{self.username}/watchlist/")
-            count_span = wl_dom.find("span", class_="js-watchlist-count")
+            wl_dom = fetch_dom_with_retry(f"{DOMAIN}/{self.username}/watchlist/")
+            count_span = (
+                wl_dom.find("span", class_="js-watchlist-count") if wl_dom else None
+            )
             if count_span:
                 digits = re.search(r"\d+", count_span.get_text().replace(",", ""))
                 if digits:
@@ -150,12 +149,18 @@ class User:
         page = 1
 
         while True:
+            step_start = time.monotonic()
+            used_cached = page == 1 and self._initial_lists_dom is not None
             page_url = (
                 f"{DOMAIN}/{self.username}/lists/"
                 if page == 1
                 else f"{DOMAIN}/{self.username}/lists/page/{page}/"
             )
-            dom = fetch_dom_with_retry(page_url)
+            dom = (
+                self._initial_lists_dom
+                if used_cached
+                else fetch_dom_with_retry(page_url)
+            )
             if not dom:
                 break
 
@@ -165,6 +170,9 @@ class User:
 
             for item in articles:
                 list_data = ListsExtractor._extract_list_data(item)
+                for entry in list_data.values():
+                    if entry.get("url"):
+                        entry["url"] = entry["url"].rstrip("/") + "/"
                 data["lists"].update(list_data)
 
                 if max_lists and len(data["lists"]) >= max_lists:
@@ -178,7 +186,8 @@ class User:
                 break
 
             page += 1
-            time.sleep(0.5)
+            if not used_cached:
+                pace_request(step_start)
 
         data["count"] = len(data["lists"])
         data["last_page"] = page

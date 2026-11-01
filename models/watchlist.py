@@ -4,14 +4,14 @@ from letterboxdpy.utils.movies_extractor import extract_movies_from_vertical_lis
 from letterboxdpy.utils.utils_url import extract_path_segment
 from letterboxdpy.watchlist import Watchlist
 
-from models.paginator import paginate_ranked_movies
+from models.paginator import fetch_dom_with_retry, paginate_ranked_movies
 
 
 class WatchList(Watchlist):
     """WatchList class for handling Letterboxd user watchlists."""
 
     def __init__(self, target, username: str | None = None):
-        """Initialize WatchList with username or URL."""
+        """Initialize WatchList with username or User object, reusing cached count/DOM."""
         if username:
             user = username
         elif hasattr(target, "username") and target.username:
@@ -24,15 +24,40 @@ class WatchList(Watchlist):
         else:
             user = str(target)
 
-        super().__init__(user)
+        self.username = user
+        self.pages = self.WatchlistPages(self.username)
+        self.url = self.get_url()
+        self._initial_dom = None
+        self._movies = None
+
+        cached_len = getattr(target, "watchlist_length", None)
+        if cached_len is not None:
+            self.count = cached_len
+        else:
+            self._initial_dom = fetch_dom_with_retry(self.url)
+            self.count = self._extract_count_from_dom(self._initial_dom)
+
+    @staticmethod
+    def _extract_count_from_dom(dom) -> int:
+        """Extract watchlist film count from pre-fetched DOM."""
+        if not dom:
+            return 0
+        wl_div = dom.find("div", class_="s-watchlist-content")
+        if wl_div and "data-num-entries" in wl_div.attrs:
+            return int(wl_div["data-num-entries"])
+        count_span = dom.find("span", class_="js-watchlist-count")
+        if count_span:
+            return int(count_span.text.split()[0].replace(",", ""))
+        return 0
 
     def fetch_movies(self, on_progress: Callable | None = None) -> list:
-        """Scrape watchlist movies with progress callback."""
+        """Scrape watchlist movies with progress callback and initial DOM reuse."""
         if self._movies is None:
             self._movies = paginate_ranked_movies(
                 base_url=self.url,
                 items_per_page=self.pages.watchlist.FILMS_PER_PAGE,
                 extractor_fn=extract_movies_from_vertical_list,
+                initial_dom=self._initial_dom,
                 total_count=self.count,
                 on_progress=on_progress,
             )

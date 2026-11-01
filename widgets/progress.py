@@ -58,7 +58,7 @@ class ProgressTracker:
         items_per_page: int | None,
     ):
         elapsed = max(0.001, time.monotonic() - self.start_time)
-        rate = current / elapsed if current > 0 else 0.0
+        rate = current / elapsed if (current > 0 and elapsed >= 0.15) else 0.0
         rate_str = f"{rate:.1f} {self.unit}/s" if rate > 0 else f"-- {self.unit}/s"
         elapsed_str = self._format_time(elapsed)
 
@@ -67,7 +67,7 @@ class ProgressTracker:
             ratio = min(1.0, current / effective_total)
             pct = int(ratio * 100)
             remaining = (effective_total - current) / rate if rate > 0 else 0.0
-            eta_str = self._format_time(remaining) if current > 0 else "--:--"
+            eta_str = self._format_time(remaining) if rate > 0 else "--:--"
             page_info = ""
             if page and items_per_page:
                 total_pages = max(page, math.ceil(effective_total / items_per_page))
