@@ -6,6 +6,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://www.python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.56+-FF4B4B)](https://streamlit.io)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Flizard.streamlit.app%2F&label=Lizard%20App)](https://lizard.streamlit.app/)
+[![Visitors](https://gitviews.com/repo/fastfingertips/lizard.svg?base=9583&label=visitors&style=flat&label-color=%2314181C&color=%2320272E)](https://github.com/fastfingertips/lizard)
 
 https://github.com/FastFingertips/lizard/assets/46646991/fddd4d83-06b2-4975-9907-8de5abc170b8
 
