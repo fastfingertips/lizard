@@ -9,6 +9,7 @@ from letterboxdpy.core.exceptions import (
 from models.config import Page
 from models.manager import Input
 from models.user import User
+from models.userfilms import UserFilms
 from models.userlist import UserList
 from models.watchlist import WatchList
 from widgets import display, messages, selectors
@@ -149,14 +150,23 @@ def username_mode(username):
             messages.watchlist_might_be_private()
 
 
-def list_mode(processed_input):
+def _render_movie_collection(collection_instance, spinner_text):
+    """Render details, loading spinner, and dataframe for a movie collection."""
+    display.object_details(collection_instance)
     try:
-        url_info = Input.parse_letterboxd_url(processed_input)
-        user_list = UserList(
-            url_info["username"],
-            url_info["slug"],
-            filters=url_info.get("filters", ""),
-        )
+        with st.spinner(spinner_text):
+            movies = collection_instance.movies
+        csv_format = st.session_state.get("csv_format", "Letterboxd")
+        display.movies_dataframe(movies, columns=LIST_COLUMNS, csv_format=csv_format)
+    except Exception as e:
+        messages.error(str(e))
+    st.button("Get again.")
+
+
+def _handle_collection_access(factory_fn, spinner_text):
+    """Safely initialize and render a movie collection model."""
+    try:
+        collection = factory_fn()
     except ResourceNotFoundError:
         messages.list_unavailable()
         st.stop()
@@ -167,26 +177,30 @@ def list_mode(processed_input):
         messages.invalid_list_url()
         st.stop()
 
-    def load_movies(user_list):
-        """Load movies from user list with spinner."""
-        with st.spinner("Loading list data..."):
-            return user_list.movies
+    _render_movie_collection(collection, spinner_text)
 
-    def display_content(user_list):
-        """Display list details and movies if available"""
-        display.object_details(user_list)
 
-        try:
-            movies = load_movies(user_list)
-            csv_format = st.session_state.get("csv_format", "Letterboxd")
-            display.movies_dataframe(
-                movies, columns=LIST_COLUMNS, csv_format=csv_format
-            )
-        except Exception as e:
-            messages.error(str(e))
+def list_mode(processed_input):
+    url_info = Input.parse_letterboxd_url(processed_input)
+    _handle_collection_access(
+        lambda: UserList(
+            url_info["username"],
+            url_info["slug"],
+            filters=url_info.get("filters", ""),
+        ),
+        "Loading list data...",
+    )
 
-    display_content(user_list)
-    st.button("Get again.")
+
+def films_mode(processed_input):
+    url_info = Input.parse_letterboxd_url(processed_input)
+    _handle_collection_access(
+        lambda: UserFilms(
+            url_info["username"],
+            filters=url_info.get("filters", ""),
+        ),
+        "Loading films data...",
+    )
 
 
 def determine_mode(user_input):
@@ -221,6 +235,8 @@ def determine_mode(user_input):
         url_type = url_info.get("type")
         if url_type == "watchlist":
             watchlist_mode(None, url_info["username"])
+        elif url_type == "user_films":
+            films_mode(url_info.get("url", processed_url))
         elif url_type == "user":
             username_mode(url_info["username"])
         else:

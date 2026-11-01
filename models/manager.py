@@ -135,6 +135,11 @@ class Input:
 
             if data_blocks[0] == "watchlist":
                 return f"{DOMAIN}/{username}/watchlist/"
+            elif data_blocks[0] == "films":
+                filters = ""
+                if len(data_blocks) > 1:
+                    filters = "/".join(data_blocks[1:]) + "/"
+                return f"{DOMAIN}/{username}/films/" + filters
 
             # Extract list slug using nested function
             list_slug, remaining_blocks = extract_list_slug(data_blocks)
@@ -174,6 +179,20 @@ class Input:
                     "url": url,
                 }
             raise ValueError(f"Invalid watchlist URL format: {url}")
+        elif "/films" in url and "/list/" not in url:
+            username = extract_path_segment(url, after="letterboxd.com/", before="/")
+            match = re.search(r"letterboxd\.com/[^/]+/films(?:/(.*))?", url)
+            raw_filters = match.group(1) if match else ""
+            filters = raw_filters.strip("/") if raw_filters else ""
+            if username:
+                return {
+                    "username": username,
+                    "slug": "films",
+                    "filters": filters,
+                    "type": "user_films",
+                    "url": url,
+                }
+            raise ValueError(f"Invalid films URL format: {url}")
         elif "/list/" in url:
             # Match username, slug, and optional filter path (e.g. genre/comedy/)
             match = re.search(r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", url)
