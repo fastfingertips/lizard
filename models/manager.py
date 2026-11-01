@@ -6,10 +6,11 @@ provides validation, type detection, and URL conversion utilities.
 """
 
 import streamlit as st
+from curl_cffi import requests as curl_requests
 from fastfingertips.url_utils import extract_path_segment
 from fastfingertips.url_utils import is_valid_url as is_url
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.utils.utils_url import parse_list_url
+from letterboxdpy.utils.utils_url import is_short_url, parse_list_url
 
 
 class Input:
@@ -155,6 +156,12 @@ class Input:
     @staticmethod
     def parse_letterboxd_url(url: str) -> dict:
         """Parse Letterboxd URL and extract components"""
+        if is_short_url(url):
+            resp = curl_requests.get(
+                url, allow_redirects=False, impersonate="chrome124", timeout=10
+            )
+            url = resp.headers.get("location") or url
+
         if "/watchlist" in url:
             username = extract_path_segment(url, after="letterboxd.com/", before="/")
             if username:
@@ -162,13 +169,19 @@ class Input:
                     "username": username,
                     "slug": "watchlist",
                     "type": "watchlist",
+                    "url": url,
                 }
             raise ValueError(f"Invalid watchlist URL format: {url}")
         elif "/list/" in url:
             username, slug = parse_list_url(url)
-            return {"username": username, "slug": slug, "type": "user_list"}
-        elif "letterboxd.com/" in url:
+            return {
+                "username": username,
+                "slug": slug,
+                "type": "user_list",
+                "url": url,
+            }
+        elif "letterboxd.com/" in url and "/film/" not in url:
             username = extract_path_segment(url, after="letterboxd.com/", before="/")
             if username:
-                return {"username": username, "type": "user"}
+                return {"username": username, "type": "user", "url": url}
         raise ValueError(f"Unsupported URL type: {url}")
