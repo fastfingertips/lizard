@@ -109,10 +109,17 @@ class User:
 
     @property
     def films_count(self) -> int | None:
-        """Get total watched films count from profile stats."""
+        """Get total watched films count from profile stats or fallback scraper."""
         if self.stats and "films" in self.stats:
             return self.stats["films"]
-        return None
+        if not hasattr(self, "_films_count_fallback"):
+            from models.userfilms import UserFilms
+
+            films = UserFilms(self.username)
+            self._films_count_fallback = films.count if films.count > 0 else None
+            if self._films_count_fallback and self.stats is not None:
+                self.stats["films"] = self._films_count_fallback
+        return self._films_count_fallback
 
     @staticmethod
     def extract_username(target) -> str:
