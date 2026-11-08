@@ -96,6 +96,23 @@ def list_unavailable():
     st.warning("List is not available.")
 
 
+def partial_lists_warning(username, fetched_count, expected_pages):
+    """Display warning when Cloudflare blocks page 2+ of user lists."""
+    st.warning(
+        f"Only the first **{fetched_count}** lists (Page 1 of {expected_pages}) could be loaded "
+        "because Letterboxd blocked deeper list pagination from the cloud server IP. "
+        f"To download any other list, paste its direct URL or **`{username}/list-slug`** in the input box above."
+    )
+
+
+def partial_movies_warning(fetched_count, total_count):
+    """Display warning when Cloudflare blocks page 2+ of movie pagination."""
+    st.warning(
+        f"Only the first **{fetched_count}** of **{total_count}** movies could be loaded "
+        "because Letterboxd blocked deeper pagination from the cloud server IP."
+    )
+
+
 def error(message):
     """Display generic error message"""
     st.error(f"Error: {message}")

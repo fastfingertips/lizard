@@ -11,6 +11,7 @@ from letterboxdpy.core.exceptions import AccessDeniedError, ResourceNotFoundErro
 from letterboxdpy.core.scraper import Scraper
 from letterboxdpy.pages.user_profile import UserProfile
 from letterboxdpy.utils.lists_extractor import ListsExtractor
+from letterboxdpy.utils.utils_parser import get_list_last_page
 
 from models.paginator import fetch_dom_with_retry, pace_request
 
@@ -36,6 +37,9 @@ class User:
         if not re.match(r"^[A-Za-z0-9_]+$", self.username):
             raise ResourceNotFoundError(self.url)
         self._initial_lists_dom = None
+        self.lists_partial = False
+        self.lists_fetched_count = 0
+        self.lists_expected_pages = 1
         try:
             self.profile = UserProfile(self.username)
             self.id = self.profile.get_id()
@@ -150,6 +154,8 @@ class User:
         """Fetch user lists with canonical URLs, retry backoff, and polite pacing."""
         data = {"limit": False, "count": 0, "last_page": 1, "lists": {}}
         total_lists = self.stats.get("lists") if self.stats else None
+        expected_pages = 1
+        fetched_pages = 0
         page = 1
 
         while True:
@@ -168,9 +174,14 @@ class User:
             if not dom:
                 break
 
+            if page == 1:
+                expected_pages = get_list_last_page(dom) or 1
+
             articles = dom.find_all("article", {"class": "list-summary"})
             if not articles:
                 break
+
+            fetched_pages = page
 
             for item in articles:
                 list_data = ListsExtractor._extract_list_data(item)
@@ -186,7 +197,7 @@ class User:
             if on_progress is not None:
                 on_progress(len(data["lists"]), total_lists, page, 12)
 
-            if data["limit"] or len(articles) < 12:
+            if data["limit"] or len(articles) < 12 or page >= expected_pages:
                 break
 
             page += 1
@@ -194,9 +205,14 @@ class User:
                 pace_request(step_start)
 
         data["count"] = len(data["lists"])
-        data["last_page"] = page
+        data["last_page"] = fetched_pages or 1
+        self.lists_fetched_count = data["count"]
+        self.lists_expected_pages = expected_pages
+        self.lists_partial = bool(not data["limit"] and fetched_pages < expected_pages)
 
-        if "lists" not in self.stats or not self.stats["lists"]:
+        if not self.lists_partial and (
+            "lists" not in self.stats or not self.stats["lists"]
+        ):
             self.stats["lists"] = data["count"]
 
         return data

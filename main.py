@@ -246,6 +246,13 @@ def username_mode(username):
         elif not is_hq_user and has_regular_lists and not has_watchlist:
             messages.lists_no_watchlist(username)
 
+        if getattr(user_instance, "lists_partial", False):
+            messages.partial_lists_warning(
+                username,
+                user_instance.lists_fetched_count,
+                user_instance.lists_expected_pages,
+            )
+
         handle_list_selection(list_options)
     else:
         messages.no_public_lists(username)
@@ -266,6 +273,12 @@ def _render_movie_collection(collection_instance, spinner_text):
             else None
         )
         movies = _fetch_with_progress(collection_instance, spinner_text, total=total)
+        if (
+            isinstance(collection_instance, UserFilms)
+            and collection_instance.count
+            and 0 < len(movies) < collection_instance.count
+        ):
+            messages.partial_movies_warning(len(movies), collection_instance.count)
         csv_format = st.session_state.get("csv_format", "Letterboxd")
         display.movies_dataframe(movies, columns=LIST_COLUMNS, csv_format=csv_format)
     except Exception as e:
