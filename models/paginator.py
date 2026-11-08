@@ -93,6 +93,13 @@ def paginate_ranked_movies(
         max_pages,
     )
 
+    if total_count == 0:
+        logger.info(
+            "[PAGINATE:DONE] base_url=%s total_collected=0 pages=0 elapsed_ms=0",
+            base_url,
+        )
+        return []
+
     while True:
         step_start = time.monotonic()
         used_cached = page == 1 and initial_dom is not None
@@ -108,7 +115,16 @@ def paginate_ranked_movies(
         if not scraped:
             break
 
+        prev_count = len(collected)
         collected.update(scraped)
+        if len(collected) == prev_count:
+            logger.warning(
+                "[PAGINATE:STALLED] base_url=%s page=%d no new items added",
+                base_url,
+                page,
+            )
+            break
+
         logger.info(
             "[PAGINATE:PAGE] page=%d page_items=%d collected=%d/%s cached=%s",
             page,
