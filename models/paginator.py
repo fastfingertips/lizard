@@ -8,6 +8,11 @@ and real-time progress callback hooks.
 import time
 from collections.abc import Callable
 
+from letterboxdpy.core.exceptions import (
+    AccessDeniedError,
+    PrivateRouteError,
+    ResourceNotFoundError,
+)
 from letterboxdpy.core.scraper import parse_url
 from letterboxdpy.utils.utils_csv import transform_to_ranked_movies
 from letterboxdpy.utils.utils_url import get_page_url
@@ -40,6 +45,19 @@ def fetch_dom_with_retry(url: str, retries: int = 3):
                 elapsed_ms,
             )
             return dom
+        except (
+            ResourceNotFoundError,
+            PrivateRouteError,
+            AccessDeniedError,
+        ) as exc:
+            elapsed_ms = int((time.monotonic() - t0) * 1000)
+            logger.warning(
+                "[FETCH:ABORT] url=%s elapsed_ms=%d err=%s",
+                url,
+                elapsed_ms,
+                exc,
+            )
+            break
         except Exception as exc:
             elapsed_ms = int((time.monotonic() - t0) * 1000)
             logger.warning(
