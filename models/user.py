@@ -7,7 +7,7 @@ from collections.abc import Callable
 
 from fastfingertips.url_utils import extract_path_segment
 from letterboxdpy.constants.project import DOMAIN
-from letterboxdpy.core.exceptions import AccessDeniedError
+from letterboxdpy.core.exceptions import AccessDeniedError, ResourceNotFoundError
 from letterboxdpy.core.scraper import Scraper
 from letterboxdpy.pages.user_profile import UserProfile
 from letterboxdpy.utils.lists_extractor import ListsExtractor
@@ -33,6 +33,8 @@ class User:
     def __init__(self, target):
         self.username = self.extract_username(target)
         self.url = f"{DOMAIN}/{self.username}/"
+        if not re.match(r"^[A-Za-z0-9_]+$", self.username):
+            raise ResourceNotFoundError(self.url)
         self._initial_lists_dom = None
         try:
             self.profile = UserProfile(self.username)
@@ -115,12 +117,14 @@ class User:
         if self.stats and "films" in self.stats:
             return self.stats["films"]
         if not hasattr(self, "_films_count_fallback"):
-            from models.userfilms import UserFilms
+            self._films_count_fallback = None
+            with contextlib.suppress(Exception):
+                from models.userfilms import UserFilms
 
-            films = UserFilms(self.username)
-            self._films_count_fallback = films.count if films.count > 0 else None
-            if self._films_count_fallback and self.stats is not None:
-                self.stats["films"] = self._films_count_fallback
+                films = UserFilms(self.username)
+                self._films_count_fallback = films.count if films.count > 0 else None
+                if self._films_count_fallback and self.stats is not None:
+                    self.stats["films"] = self._films_count_fallback
         return self._films_count_fallback
 
     @staticmethod
