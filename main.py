@@ -24,10 +24,26 @@ def _fetch_with_progress(collection, desc: str, total: int | None = None) -> lis
         return collection.fetch_movies(on_progress=tracker.update)
 
 
-def watchlist_mode(user_instance, username, sort_by: str | None = None):
+def watchlist_mode(
+    user_instance,
+    username,
+    filters: str = "",
+    sort_by: str | None = None,
+):
+    active_sort = selectors.sort_selector(
+        "watchlist",
+        default_sort=sort_by,
+        key_prefix=f"wl_{username}",
+    )
+
     def create_watchlist(username):
         """Create WatchList instance"""
-        return WatchList(user_instance, username, sort_by=sort_by)
+        return WatchList(
+            user_instance,
+            username,
+            filters=filters,
+            sort_by=active_sort,
+        )
 
     def load_movies(watchlist):
         """Load movies from watchlist with progress bar"""
@@ -305,12 +321,17 @@ def _handle_collection_access(factory_fn, spinner_text):
 
 def list_mode(processed_input):
     url_info = Input.parse_letterboxd_url(processed_input)
+    active_sort = selectors.sort_selector(
+        "list",
+        default_sort=url_info.get("sort_by"),
+        key_prefix=f"list_{url_info['username']}_{url_info['slug']}",
+    )
     _handle_collection_access(
         lambda: UserList(
             url_info["username"],
             url_info["slug"],
             filters=url_info.get("filters", ""),
-            sort_by=url_info.get("sort_by"),
+            sort_by=active_sort,
         ),
         "Loading list data...",
     )
@@ -318,11 +339,16 @@ def list_mode(processed_input):
 
 def films_mode(processed_input):
     url_info = Input.parse_letterboxd_url(processed_input)
+    active_sort = selectors.sort_selector(
+        "films",
+        default_sort=url_info.get("sort_by"),
+        key_prefix=f"films_{url_info['username']}",
+    )
     _handle_collection_access(
         lambda: UserFilms(
             url_info["username"],
             filters=url_info.get("filters", ""),
-            sort_by=url_info.get("sort_by"),
+            sort_by=active_sort,
         ),
         "Loading films data...",
     )
@@ -359,7 +385,12 @@ def determine_mode(user_input):
 
         url_type = url_info.get("type")
         if url_type == "watchlist":
-            watchlist_mode(None, url_info["username"], sort_by=url_info.get("sort_by"))
+            watchlist_mode(
+                None,
+                url_info["username"],
+                filters=url_info.get("filters", ""),
+                sort_by=url_info.get("sort_by"),
+            )
         elif url_type == "user_films":
             films_mode(url_info.get("url", processed_url))
         elif url_type == "user":
