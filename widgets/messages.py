@@ -113,6 +113,11 @@ def partial_movies_warning(fetched_count, total_count):
     )
 
 
+def no_filtered_movies():
+    """Display info message when no movies match the active filters."""
+    st.info("No movies found matching the selected filters.")
+
+
 def error(message):
     """Display generic error message"""
     st.error(f"Error: {message}")

@@ -30,8 +30,9 @@ def watchlist_mode(
     filters: str = "",
     sort_by: str | None = None,
 ):
-    active_sort = selectors.sort_selector(
+    active_filters, active_sort = selectors.collection_controls(
         "watchlist",
+        default_filters=filters,
         default_sort=sort_by,
         key_prefix=f"wl_{username}",
     )
@@ -41,15 +42,16 @@ def watchlist_mode(
         return WatchList(
             user_instance,
             username,
-            filters=filters,
+            filters=active_filters,
             sort_by=active_sort,
         )
 
     def load_movies(watchlist):
         """Load movies from watchlist with progress bar"""
-        return _fetch_with_progress(watchlist, "Loading watchlist data...")
+        total = 0 if watchlist.filters else None
+        return _fetch_with_progress(watchlist, "Loading watchlist data...", total=total)
 
-    def display_movies(movies, user_instance, username):
+    def display_movies(movies, watchlist, user_instance, username):
         """Display watchlist movies or appropriate message"""
         if movies and len(movies) > 0:
             # Display movies with format from session state
@@ -57,6 +59,8 @@ def watchlist_mode(
             display.movies_dataframe(
                 movies, columns=WATCHLIST_COLUMNS, csv_format=csv_format
             )
+        elif watchlist.filters:
+            messages.no_filtered_movies()
         else:
             if (
                 hasattr(user_instance, "watchlist_length")
@@ -77,7 +81,7 @@ def watchlist_mode(
 
         # Then load and display movies
         movies = load_movies(watchlist)
-        display_movies(movies, user_instance, username)
+        display_movies(movies, watchlist, user_instance, username)
     except Exception as e:
         handle_error(e)
 
@@ -295,8 +299,13 @@ def _render_movie_collection(collection_instance, spinner_text):
             and 0 < len(movies) < collection_instance.count
         ):
             messages.partial_movies_warning(len(movies), collection_instance.count)
-        csv_format = st.session_state.get("csv_format", "Letterboxd")
-        display.movies_dataframe(movies, columns=LIST_COLUMNS, csv_format=csv_format)
+        if not movies and getattr(collection_instance, "filters", None):
+            messages.no_filtered_movies()
+        else:
+            csv_format = st.session_state.get("csv_format", "Letterboxd")
+            display.movies_dataframe(
+                movies, columns=LIST_COLUMNS, csv_format=csv_format
+            )
     except Exception as e:
         messages.error(str(e))
     st.button("Get again.")
@@ -321,8 +330,9 @@ def _handle_collection_access(factory_fn, spinner_text):
 
 def list_mode(processed_input):
     url_info = Input.parse_letterboxd_url(processed_input)
-    active_sort = selectors.sort_selector(
+    active_filters, active_sort = selectors.collection_controls(
         "list",
+        default_filters=url_info.get("filters", ""),
         default_sort=url_info.get("sort_by"),
         key_prefix=f"list_{url_info['username']}_{url_info['slug']}",
     )
@@ -330,7 +340,7 @@ def list_mode(processed_input):
         lambda: UserList(
             url_info["username"],
             url_info["slug"],
-            filters=url_info.get("filters", ""),
+            filters=active_filters,
             sort_by=active_sort,
         ),
         "Loading list data...",
@@ -339,15 +349,16 @@ def list_mode(processed_input):
 
 def films_mode(processed_input):
     url_info = Input.parse_letterboxd_url(processed_input)
-    active_sort = selectors.sort_selector(
+    active_filters, active_sort = selectors.collection_controls(
         "films",
+        default_filters=url_info.get("filters", ""),
         default_sort=url_info.get("sort_by"),
         key_prefix=f"films_{url_info['username']}",
     )
     _handle_collection_access(
         lambda: UserFilms(
             url_info["username"],
-            filters=url_info.get("filters", ""),
+            filters=active_filters,
             sort_by=active_sort,
         ),
         "Loading films data...",
