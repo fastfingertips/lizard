@@ -51,6 +51,9 @@ def object_details(obj, title=None):
         obj: Object to display
         title: Optional title for the section
     """
+    if not st.session_state.get("show_details", False):
+        return
+
     if title:
         st.subheader(title)
 

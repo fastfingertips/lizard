@@ -415,8 +415,11 @@ if __name__ == "__main__":
     page.create_title("Letterboxd List Downloader")
     page.create_footer()
 
-    csv_format = selectors.csv_format_selector()
-    st.session_state["csv_format"] = csv_format
+    col_fmt, col_det = st.columns([3, 1], vertical_alignment="bottom")
+    with col_fmt:
+        st.session_state["csv_format"] = selectors.csv_format_selector()
+    with col_det:
+        st.session_state["show_details"] = selectors.details_toggle_selector()
 
     user_input = Input()
     user_input.process_data()

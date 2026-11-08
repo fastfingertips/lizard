@@ -43,6 +43,20 @@ def csv_format_selector():
     return csv_format
 
 
+def details_toggle_selector() -> bool:
+    """Display toggle widget to control whether metadata Details expanders render."""
+    url_details = st.query_params.get("details", "").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+    return st.toggle(
+        "Show Details",
+        value=url_details,
+        help="Display raw JSON metadata for loaded profiles and collections",
+    )
+
+
 COMMON_SORT_OPTIONS: dict[str, str | None] = {
     "Default": None,
     "Popularity": "popular",
