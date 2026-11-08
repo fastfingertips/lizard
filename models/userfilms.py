@@ -58,4 +58,5 @@ class UserFilms(BaseUserFilms):
             "url": self.url,
             "count": self.count,
             "filters": self.filters or None,
+            "sort_by": self.sort_by,
         }

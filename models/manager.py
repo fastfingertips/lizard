@@ -138,13 +138,10 @@ class Input:
             if not username or not data_blocks:
                 return None
 
-            if data_blocks[0] == "watchlist":
-                return f"{DOMAIN}/{username}/watchlist/"
-            elif data_blocks[0] == "films":
-                filters = ""
-                if len(data_blocks) > 1:
-                    filters = "/".join(data_blocks[1:]) + "/"
-                return f"{DOMAIN}/{username}/films/" + filters
+            if data_blocks[0] in ("watchlist", "films"):
+                section = data_blocks[0]
+                suffix = "/".join(data_blocks[1:]) + "/" if len(data_blocks) > 1 else ""
+                return f"{DOMAIN}/{username}/{section}/{suffix}"
 
             # Extract list slug using nested function
             list_slug, remaining_blocks = extract_list_slug(data_blocks)
@@ -174,38 +171,37 @@ class Input:
         url = re.sub(r"/page/\d+/?", "/", url)
         url = url.rstrip("/") + "/"
 
-        if "/watchlist" in url:
-            username = extract_path_segment(url, after="letterboxd.com/", before="/")
-            sort_match = re.search(r"/watchlist/by/([^/?#]+)/?", url)
-            sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
-            if username:
+        sort_match = re.search(r"/by/([^/?#]+)/?", url)
+        sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
+        clean_url = re.sub(r"/by/[^/?#]+/?", "/", url)
+
+        if "/watchlist" in clean_url:
+            match = re.search(r"letterboxd\.com/([^/]+)/watchlist(?:/(.*))?", clean_url)
+            if match:
+                username = match.group(1)
+                filters = (match.group(2) or "").strip("/")
                 return {
                     "username": username,
                     "slug": "watchlist",
+                    "filters": filters,
                     "sort_by": sort_by,
                     "type": "watchlist",
                     "url": url,
                 }
             raise ValueError(f"Invalid watchlist URL format: {url}")
-        elif "/films" in url and "/list/" not in url:
-            sort_match = re.search(r"/by/([^/?#]+)/?", url)
-            sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
-            clean_films_url = re.sub(r"/by/[^/?#]+/?", "/", url)
-            username, filters = parse_films_url(clean_films_url)
+        elif "/films" in clean_url and "/list/" not in clean_url:
+            username, filters = parse_films_url(clean_url)
             return {
                 "username": username,
                 "slug": "films",
-                "filters": filters,
+                "filters": filters or "",
                 "sort_by": sort_by,
                 "type": "user_films",
                 "url": url,
             }
-        elif "/list/" in url:
-            sort_match = re.search(r"/by/([^/?#]+)/?", url)
-            sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
-            clean_list_url = re.sub(r"/by/[^/?#]+/?", "/", url)
+        elif "/list/" in clean_url:
             match = re.search(
-                r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", clean_list_url
+                r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", clean_url
             )
             if match:
                 username, slug = match.group(1), match.group(2)
@@ -213,7 +209,7 @@ class Input:
                 raw_filters = re.sub(r"^detail/?", "", raw_filters.strip("/"))
                 filters = raw_filters.strip("/")
             else:
-                username, slug = parse_list_url(clean_list_url)
+                username, slug = parse_list_url(clean_url)
                 filters = ""
             return {
                 "username": username,
