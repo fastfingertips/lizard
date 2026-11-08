@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from letterboxdpy.list import List
 from letterboxdpy.utils.movies_extractor import extract_movies_from_vertical_list
+from letterboxdpy.utils.utils_url import apply_sort_by_to_url
 
 from models.paginator import paginate_ranked_movies
 
@@ -21,7 +22,15 @@ class UserList(List):
         if filters:
             clean_filters = filters.strip("/")
             self.filters = clean_filters
-            self.url = f"{self.url}{clean_filters}/"
+            base_url = (
+                f"https://letterboxd.com/{self.username}/list/"
+                f"{self.slug}/{clean_filters}/"
+            )
+            self.url = (
+                apply_sort_by_to_url(base_url, self.sort_by)
+                if self.sort_by
+                else base_url
+            )
             self.pages.list.url = self.url
             self._movies = None
 

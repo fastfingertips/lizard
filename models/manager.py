@@ -51,7 +51,7 @@ class Input:
 
         self.is_empty = not self.data
         clean_input = self.data.strip("/")
-        self.is_username = bool(clean_input and "/" not in clean_input)
+        self.is_username = bool(re.match(r"^[A-Za-z0-9_]+$", clean_input))
         self.is_url = bool(not self.is_username and is_url(self.data))
 
     @staticmethod
@@ -170,6 +170,8 @@ class Input:
         """Parse Letterboxd URL and extract components"""
         if is_short_url(url):
             url = resolve_short_url(url)
+        url = url.split("?", 1)[0].split("#", 1)[0]
+        url = re.sub(r"/page/\d+/?", "/", url)
         url = url.rstrip("/") + "/"
 
         if "/watchlist" in url:
@@ -186,9 +188,10 @@ class Input:
                 }
             raise ValueError(f"Invalid watchlist URL format: {url}")
         elif "/films" in url and "/list/" not in url:
-            username, filters = parse_films_url(url)
-            sort_match = re.search(r"/films/by/([^/?#]+)/?", url)
+            sort_match = re.search(r"/by/([^/?#]+)/?", url)
             sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
+            clean_films_url = re.sub(r"/by/[^/?#]+/?", "/", url)
+            username, filters = parse_films_url(clean_films_url)
             return {
                 "username": username,
                 "slug": "films",
@@ -198,17 +201,20 @@ class Input:
                 "url": url,
             }
         elif "/list/" in url:
-            # Match username, slug, and optional filter path (e.g. genre/comedy/)
-            match = re.search(r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", url)
-            if match:
-                username, slug = match.group(1), match.group(2)
-                raw_filters = match.group(3)
-                filters = raw_filters.strip("/") if raw_filters else ""
-            else:
-                username, slug = parse_list_url(url)
-                filters = ""
             sort_match = re.search(r"/by/([^/?#]+)/?", url)
             sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
+            clean_list_url = re.sub(r"/by/[^/?#]+/?", "/", url)
+            match = re.search(
+                r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", clean_list_url
+            )
+            if match:
+                username, slug = match.group(1), match.group(2)
+                raw_filters = match.group(3) or ""
+                raw_filters = re.sub(r"^detail/?", "", raw_filters.strip("/"))
+                filters = raw_filters.strip("/")
+            else:
+                username, slug = parse_list_url(clean_list_url)
+                filters = ""
             return {
                 "username": username,
                 "slug": slug,
