@@ -8,8 +8,7 @@ from collections.abc import Callable
 from fastfingertips.url_utils import extract_path_segment
 from letterboxdpy.constants.project import DOMAIN
 from letterboxdpy.core.exceptions import AccessDeniedError, ResourceNotFoundError
-from letterboxdpy.core.scraper import Scraper
-from letterboxdpy.pages.user_profile import UserProfile
+from letterboxdpy.core.scraper import Scraper, parse_url
 from letterboxdpy.utils.lists_extractor import ListsExtractor
 from letterboxdpy.utils.utils_parser import get_list_last_page
 
@@ -40,24 +39,6 @@ class User:
         self.lists_partial = False
         self.lists_fetched_count = 0
         self.lists_expected_pages = 1
-        try:
-            self.profile = UserProfile(self.username)
-            self.id = self.profile.get_id()
-            self.badge = self.profile.get_badge()
-            self.display_name = self.profile.get_display_name()
-            self.bio = self.profile.get_bio()
-            self.location = self.profile.get_location()
-            self.website = self.profile.get_website()
-            self.watchlist_length = self.profile.get_watchlist_length()
-            self.stats = self.profile.get_stats()
-            self.favorites = self.profile.get_favorites()
-            self.avatar = self.profile.get_avatar()
-            self.backdrop = self.profile.get_backdrop()
-        except AccessDeniedError:
-            self._populate_fallback()
-
-    def _populate_fallback(self) -> None:
-        """Populate profile metadata from accessible endpoints when profile is challenged."""
         self.profile = None
         self.id = None
         self.badge = None
@@ -70,15 +51,21 @@ class User:
         self.favorites = None
         self.avatar = None
         self.backdrop = None
+        self._populate_profile()
 
-        with contextlib.suppress(Exception):
-            lists_dom = fetch_dom_with_retry(f"{DOMAIN}/{self.username}/lists/")
+    def _populate_profile(self) -> None:
+        """Populate profile metadata fast from lists and watchlist endpoints."""
+        lists_url = f"{DOMAIN}/{self.username}/lists/"
+        try:
+            lists_dom = parse_url(lists_url)
+        except AccessDeniedError:
+            lists_dom = None
+        except ResourceNotFoundError:
+            raise ResourceNotFoundError(self.url) from None
+
+        if lists_dom:
             self._initial_lists_dom = lists_dom
-            ph = (
-                lists_dom.find("section", class_="profile-header")
-                if lists_dom
-                else None
-            )
+            ph = lists_dom.find("section", class_="profile-header")
             if ph:
                 h1 = ph.find("h1")
                 if h1:

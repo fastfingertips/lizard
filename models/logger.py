@@ -60,9 +60,15 @@ def log_step(tag: str, **meta):
         yield
     except Exception as exc:
         elapsed_ms = int((time.monotonic() - start) * 1000)
-        logger.error(
-            "[%s:ERROR] %s elapsed_ms=%d err=%s",
+        log_fn = (
+            logger.warning
+            if exc.__class__.__name__ == "ResourceNotFoundError"
+            else logger.error
+        )
+        log_fn(
+            "[%s:%s] %s elapsed_ms=%d err=%s",
             tag,
+            "WARN" if exc.__class__.__name__ == "ResourceNotFoundError" else "ERROR",
             meta_str,
             elapsed_ms,
             exc,
