@@ -1,5 +1,3 @@
-import contextlib
-
 import streamlit as st
 from letterboxdpy.constants.project import LIST_COLUMNS, WATCHLIST_COLUMNS
 from letterboxdpy.core.exceptions import (
@@ -7,7 +5,6 @@ from letterboxdpy.core.exceptions import (
     PageLoadError,
     ResourceNotFoundError,
 )
-from letterboxdpy.search import Search, SearchFilter
 
 from models.config import Page
 from models.logger import log_step, logger
@@ -368,78 +365,6 @@ def films_mode(processed_input):
     )
 
 
-def _perform_search(query: str) -> tuple[list, list]:
-    """Search Letterboxd for matching members and lists without raising exceptions."""
-    members = []
-    lists = []
-    with contextlib.suppress(Exception):
-        sm = Search(query, search_filter=SearchFilter.MEMBERS, adult=False)
-        members = sm.get_results(num_results=5).get("results", [])
-    with contextlib.suppress(Exception):
-        sl = Search(query, search_filter=SearchFilter.LISTS, adult=False)
-        lists = sl.get_results(num_results=5).get("results", [])
-    return members, lists
-
-
-def search_mode(query: str):
-    """Present matching Letterboxd members, lists, and username suggestions."""
-    st.info(
-        f"Letterboxd usernames cannot contain spaces. "
-        f"Looking for matches for **'{query}'**..."
-    )
-
-    candidates = Input.get_username_candidates(query)
-    if candidates:
-        st.write("Suggested usernames:")
-        cols = st.columns(min(len(candidates), 4))
-        for idx, cand in enumerate(candidates):
-            with cols[idx]:
-                if st.button(f"@{cand}", key=f"cand_{cand}"):
-                    username_mode(cand)
-                    st.stop()
-
-    with st.spinner(f"Searching Letterboxd for '{query}'..."):
-        members, lists = _perform_search(query)
-
-    if not members and not lists and not candidates:
-        messages.invalid_input()
-        st.stop()
-
-    if members:
-        st.subheader("Matching Members")
-        for m in members[:5]:
-            uname = m.get("username")
-            if not uname:
-                continue
-            display_name = m.get("display_name") or uname
-            badge = f" `[{m['badge']}]`" if m.get("badge") else ""
-            c_info, c_btn = st.columns([3, 1], vertical_alignment="center")
-            with c_info:
-                st.markdown(f"**{display_name}** (`@{uname}`){badge}")
-            with c_btn:
-                if st.button("Load Profile", key=f"mem_{uname}"):
-                    username_mode(uname)
-                    st.stop()
-
-    if lists:
-        st.subheader("Matching Lists")
-        for l_item in lists[:5]:
-            url = l_item.get("url")
-            if not url:
-                continue
-            title = l_item.get("title", "Untitled")
-            owner = (l_item.get("owner") or {}).get("username", "")
-            count = l_item.get("films", 0)
-            by_owner = f" by **{owner}**" if owner else ""
-            c_info, c_btn = st.columns([3, 1], vertical_alignment="center")
-            with c_info:
-                st.markdown(f"**{title}**{by_owner} ({count} movies)")
-            with c_btn:
-                if st.button("Load List", key=f"lst_{url}"):
-                    list_mode(url)
-                    st.stop()
-
-
 def determine_mode(user_input):
     """Determine which mode to use based on user input"""
     if not user_input.data:
@@ -449,44 +374,40 @@ def determine_mode(user_input):
     if user_input.is_username:
         username_mode(user_input.data)
         st.stop()
-
-    if not user_input.is_url and "/" not in user_input.data:
-        search_mode(user_input.data)
-        st.stop()
-
-    try:
-        if user_input.is_url:
-            processed_url = user_input.data.rstrip("/") + "/"
-        else:
-            processed_url = user_input.convert_to_url(user_input.data)
-    except Exception:
-        messages.invalid_input()
-        st.stop()
-
-    if not processed_url:
-        messages.invalid_input()
-        st.stop()
-
-    try:
-        url_info = Input.parse_letterboxd_url(processed_url)
-    except Exception:
-        messages.invalid_list_url()
-        st.stop()
-
-    url_type = url_info.get("type")
-    if url_type == "watchlist":
-        watchlist_mode(
-            None,
-            url_info["username"],
-            filters=url_info.get("filters", ""),
-            sort_by=url_info.get("sort_by"),
-        )
-    elif url_type == "user_films":
-        films_mode(url_info.get("url", processed_url))
-    elif url_type == "user":
-        username_mode(url_info["username"])
     else:
-        list_mode(url_info.get("url", processed_url))
+        try:
+            if user_input.is_url:
+                processed_url = user_input.data.rstrip("/") + "/"
+            else:
+                processed_url = user_input.convert_to_url(user_input.data)
+        except Exception:
+            messages.invalid_input()
+            st.stop()
+
+        if not processed_url:
+            messages.invalid_input()
+            st.stop()
+
+        try:
+            url_info = Input.parse_letterboxd_url(processed_url)
+        except Exception:
+            messages.invalid_list_url()
+            st.stop()
+
+        url_type = url_info.get("type")
+        if url_type == "watchlist":
+            watchlist_mode(
+                None,
+                url_info["username"],
+                filters=url_info.get("filters", ""),
+                sort_by=url_info.get("sort_by"),
+            )
+        elif url_type == "user_films":
+            films_mode(url_info.get("url", processed_url))
+        elif url_type == "user":
+            username_mode(url_info["username"])
+        else:
+            list_mode(url_info.get("url", processed_url))
 
 
 if __name__ == "__main__":

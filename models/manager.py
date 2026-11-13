@@ -165,25 +165,6 @@ class Input:
         return None
 
     @staticmethod
-    def get_username_candidates(query: str) -> list[str]:
-        """Generate likely username candidates from free-text query with spaces or symbols."""
-        candidates = []
-        clean = query.strip()
-        stripped = re.sub(r"[^A-Za-z0-9_]", "", clean.lower())
-        if stripped and re.match(r"^[A-Za-z0-9_]+$", stripped):
-            candidates.append(stripped)
-
-        underscored = re.sub(r"[^A-Za-z0-9_]+", "_", clean.lower()).strip("_")
-        if (
-            underscored
-            and underscored not in candidates
-            and re.match(r"^[A-Za-z0-9_]+$", underscored)
-        ):
-            candidates.append(underscored)
-
-        return candidates
-
-    @staticmethod
     def parse_letterboxd_url(url: str) -> dict:
         """Parse Letterboxd URL and extract components"""
         if is_short_url(url):
