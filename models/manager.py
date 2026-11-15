@@ -177,31 +177,7 @@ class Input:
         sort_by = normalize_sort_by(sort_match.group(1)) if sort_match else None
         clean_url = re.sub(r"/by/[^/?#]+/?", "/", url)
 
-        if "/watchlist" in clean_url:
-            match = re.search(r"letterboxd\.com/([^/]+)/watchlist(?:/(.*))?", clean_url)
-            if match:
-                username = match.group(1)
-                filters = (match.group(2) or "").strip("/")
-                return {
-                    "username": username,
-                    "slug": "watchlist",
-                    "filters": filters,
-                    "sort_by": sort_by,
-                    "type": "watchlist",
-                    "url": url,
-                }
-            raise ValueError(f"Invalid watchlist URL format: {url}")
-        elif "/films" in clean_url and "/list/" not in clean_url:
-            username, filters = parse_films_url(clean_url)
-            return {
-                "username": username,
-                "slug": "films",
-                "filters": filters or "",
-                "sort_by": sort_by,
-                "type": "user_films",
-                "url": url,
-            }
-        elif "/list/" in clean_url:
+        if "/list/" in clean_url:
             match = re.search(
                 r"letterboxd\.com/([^/]+)/list/([^/]+)(?:/(.*))?", clean_url
             )
@@ -219,6 +195,29 @@ class Input:
                 "filters": filters,
                 "sort_by": sort_by,
                 "type": "user_list",
+                "url": url,
+            }
+        elif match := re.search(
+            r"letterboxd\.com/([^/]+)/watchlist(?:/(.*))?", clean_url
+        ):
+            username = match.group(1)
+            filters = (match.group(2) or "").strip("/")
+            return {
+                "username": username,
+                "slug": "watchlist",
+                "filters": filters,
+                "sort_by": sort_by,
+                "type": "watchlist",
+                "url": url,
+            }
+        elif re.search(r"letterboxd\.com/([^/]+)/films(?:/(.*))?", clean_url):
+            username, filters = parse_films_url(clean_url)
+            return {
+                "username": username,
+                "slug": "films",
+                "filters": filters or "",
+                "sort_by": sort_by,
+                "type": "user_films",
                 "url": url,
             }
         elif "letterboxd.com/" in url and "/film/" not in url:
